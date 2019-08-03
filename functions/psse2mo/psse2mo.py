@@ -50,19 +50,27 @@ sweep_index = int(rawIndex[0])
 while sweep_index != int(rawIndex[1]):
 	sweep_index += 1
 nbuses = sweep_index - int(rawIndex[0])
-BUS = np.zeros((nbuses,12)) # initializing bus matrix
+BUSD = np.zeros((nbuses,20)) # initializing bus matrix
 BUSNAME = [] # initializing bus name array
 # ----- Start retrieving buses:
 sweep_index = int(rawIndex[0])
 for ii in range(0,nbuses,1):
 	line = rawContent[ii+int(rawIndex[0])]
-	BUS[ii,0] = ii+1
-	BUS[ii,1] = float(line[0:6])
+	BUSD[ii,0] = ii
+	BUSD[ii,1] = float(line[0:6])
 	BUSNAME.append(line[8:20])
-	BUS[ii,2] = float(line[22:30])
+	BUSD[ii,2] = float(line[22:30])
+	BUSD[ii,3] = float(line[32:33])
+	BUSD[ii,4] = float(line[34:38])
+	BUSD[ii,5] = float(line[39:43])
+	BUSD[ii,6] = float(line[44:48])
+	BUSD[ii,7] = float(line[49:56])
+	BUSD[ii,8] = float(line[57:66])
+	BUSD[ii,9] = float(line[67:74])
+	BUSD[ii,10] = float(line[75:82])
 # ----- Finishing counting time:		
 elapsedtime = time.time() - start_time
 # ----- Printing intermediate files:
-for each in BUSNAME:
-	print each
-np.savetxt('BUS.txt',BUS, fmt='%.0f')
+#for each in BUSNAME:
+#	print each
+np.savetxt('BUS.txt',BUS, fmt='%.4f')
