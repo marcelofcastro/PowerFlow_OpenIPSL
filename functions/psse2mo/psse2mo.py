@@ -73,12 +73,12 @@ nameornumber = 1
 if nameornumber == 0:
 	modelica_file = open("testsystem.mo","a")
 	for ii in range(0,nbuses,1):
-		modelica_file.write("  OpenIPSL.Electrical.Buses.BusExt %s (V_b = %.1f, v_0 = PFData.voltages.V%d, angle_0 = PFData.angles.A%d); \n" % (str(BUSNAME[ii]), BUSD[ii,2]*1000,int(BUSD[ii,1]),int(BUSD[ii,1]) ))
+		modelica_file.write("  OpenIPSL.Electrical.Buses.BusExt %s (V_b = %.1f, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.angles.A%d); \n" % (str(BUSNAME[ii]), BUSD[ii,2]*1000,int(BUSD[ii,1]),int(BUSD[ii,1]) ))
 	modelica_file.close()
 else:
 	modelica_file = open("testsystem.mo","a")
 	for ii in range(0,nbuses,1):
-		modelica_file.write("  OpenIPSL.Electrical.Buses.BusExt B_%d (V_b = %.1f, v_0 = PFData.voltages.V%d, angle_0 = PFData.angles.A%d); \n" % (int(BUSD[ii,1]), BUSD[ii,2]*1000,int(BUSD[ii,1]),int(BUSD[ii,1])))
+		modelica_file.write("  OpenIPSL.Electrical.Buses.BusExt B_%d (V_b = %.1f, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.angles.A%d); \n" % (int(BUSD[ii,1]), BUSD[ii,2]*1000,int(BUSD[ii,1]),int(BUSD[ii,1])))
 	modelica_file.close()
 # ----- Finishing counting time:		
 elapsedtime = time.time() - start_time
