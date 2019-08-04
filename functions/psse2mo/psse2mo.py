@@ -26,7 +26,7 @@ system_frequency = float(FirstLine[22:27])
 # ----- Writing modelica file:
 modelica_file = open("testsystem.mo","w+")
 modelica_file.write("model testsystem\n")
-modelica_file.write("inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0f, fn = %.2f);\n" % (float(system_base*1000000),float(system_frequency)))
+modelica_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0f, fn = %.2f);\n" % (float(system_base*1000000),float(system_frequency)))
 modelica_file.close()
 # ----- Printing report file:
 report = open("report_file.txt","w+")
@@ -68,9 +68,25 @@ for ii in range(0,nbuses,1):
 	BUSD[ii,8] = float(line[57:66])
 	BUSD[ii,9] = float(line[67:74])
 	BUSD[ii,10] = float(line[75:82])
+# ----- Writing the modelica file:
+nameornumber = 1
+if nameornumber == 0:
+	modelica_file = open("testsystem.mo","a")
+	for ii in range(0,nbuses,1):
+		modelica_file.write("  OpenIPSL.Electrical.Buses.BusExt %s (V_b = %.1f, v_0 = PFData.voltages.V%d, angle_0 = PFData.angles.A%d); \n" % (str(BUSNAME[ii]), BUSD[ii,2]*1000,int(BUSD[ii,1]),int(BUSD[ii,1]) ))
+	modelica_file.close()
+else:
+	modelica_file = open("testsystem.mo","a")
+	for ii in range(0,nbuses,1):
+		modelica_file.write("  OpenIPSL.Electrical.Buses.BusExt B_%d (V_b = %.1f, v_0 = PFData.voltages.V%d, angle_0 = PFData.angles.A%d); \n" % (int(BUSD[ii,1]), BUSD[ii,2]*1000,int(BUSD[ii,1]),int(BUSD[ii,1])))
+	modelica_file.close()
 # ----- Finishing counting time:		
 elapsedtime = time.time() - start_time
+# ----- Ending modelica file:
+modelica_file = open("testsystem.mo","a")
+modelica_file.write("end testsystem;")
+modelica_file.close()
 # ----- Printing intermediate files:
 #for each in BUSNAME:
 #	print each
-np.savetxt('BUS.txt',BUS, fmt='%.4f')
+#np.savetxt('BUS.txt',BUS, fmt='%.4f')
