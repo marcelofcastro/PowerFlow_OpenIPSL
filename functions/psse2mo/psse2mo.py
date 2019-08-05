@@ -155,8 +155,8 @@ os.chdir(systemdirectory)
 system_file = open(networkname+".mo","w+")
 system_file.write("within TestSystem;")
 system_file.write("model power_grid\n")
-system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0fe6, fn = %.2f);\n" % (float(system_base),float(system_frequency)))
-system_file.write("  TestSystem.Data.pfdata pfdata;\n")
+system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0fe6, fn = %.2f) annotation (Placement(transformation(extent={{-94,80},{-60,100}})));\n" % (float(system_base),float(system_frequency)))
+system_file.write("  TestSystem.Data.pfdata pfdata  annotation annotation (Placement(transformation(extent={{-40,80},{-20,100}})));\n")
 system_file.close()
 # ----- Listing buses in the modelica file:
 nameornumber = 1
