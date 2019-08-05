@@ -43,18 +43,15 @@ pkg_ordr = "package.order"
 # ----- Initializing arrays:
 rawContent = []
 dyrContent = []
-rawIndex = ['3'] # relevant information start at third line
+rawIndex = [3] # relevant information start at third line
+dyrIndex1 = [0]
+dyrIndex2 = []
 # ----- Opening the .raw file:
 start_time = time.time() # starting to count the time:
 with open("testsystem.raw", "r+") as raw_file: # opens the file for reading
     for line in raw_file:
         rawContent.append(line)     # adds line
 raw_file.close() # closes the file
-# ----- Opening the .dyr file:
-with open("testsystem.dyr", "r+") as dyr_file: # opens the file for reading
-    for line in dyr_file:
-        dyrContent.append(line)     # adds line
-dyr_file.close() # closes the file
 # ----- Finding specific parameters:
 FirstLine = rawContent[0]
 system_base = float(FirstLine[2:10])
@@ -77,7 +74,7 @@ sweep_index = int(rawIndex[0])
 for ii in range(0,nbuses,1):
 	line = rawContent[ii+int(rawIndex[0])]
 	BUSD[ii,0] = ii                  # Auxiliary bus number
-	BUSD[ii,1] = float(line[0:6])    # Bus number
+	BUSD[ii,1] = int(line[0:6])    # Bus number
 	BUSNAME.append(line[8:20])       # Bus name
 	BUSD[ii,2] = float(line[22:30])  # Bus base voltage
 	BUSD[ii,3] = float(line[32:33])  # Bus type
@@ -88,6 +85,20 @@ for ii in range(0,nbuses,1):
 	BUSD[ii,8] = float(line[57:66])  # Bus angle
 	BUSD[ii,9] = float(line[67:74])  #
 	BUSD[ii,10] = float(line[75:82]) #
+# ----- Opening and cleaning the .dyr file:
+with open("testsystem.dyr", "r+") as dyr_file: # opens the file for reading
+    for line in dyr_file:
+    	if line[0] != "/": 
+    		if line.find("\'USRMDL\'") < 0 and line.find("\'USRMSC\'") < 0:
+    			dyrContent.append(line) # adds line
+dyr_file.close() # closes the file
+# ----- Finding start and stop indexes in .dyr file:
+for ii in range(0,len(dyrContent),1):
+	stopix = dyrContent[ii].find("/")
+	if stopix > 0:
+		dyrIndex2.append(ii)
+		if ii != (len(dyrContent)-1):
+			dyrIndex1.append(ii+1)
 # ----- Creating system package .mo file:
 os.chdir(systemdirectory)
 packagemo = open(pkg_name,"w+")
@@ -130,9 +141,9 @@ vdatamo.write("within TestSystem.Data;\n")
 vdatamo.write("record voltage_data\n")
 vdatamo.write("  extends Modelica.Icons.Record;\n")
 for ii in range(0,nbuses,1):
-	vdatamo.write("  //Bus %d\n" % (int(BUSD[ii,1])))
-	vdatamo.write("  parameter Real V%d = %.4f;\n" % (int(BUSD[ii,1]), BUSD[ii,7]))
-	vdatamo.write("  parameter Real A%d = %.4f;\n" % (int(BUSD[ii,1]), BUSD[ii,8]))
+	vdatamo.write("  //Bus %d\n" % (BUSD[ii,1]))
+	vdatamo.write("  parameter Real V%d = %.4f;\n" % (BUSD[ii,1], BUSD[ii,7]))
+	vdatamo.write("  parameter Real A%d = %.4f;\n" % (BUSD[ii,1], BUSD[ii,8]))
 vdatamo.write("end voltage_data;")
 # ----- Writing power record:
 vdatamo = open("power_data.mo","w+")
@@ -156,19 +167,19 @@ system_file = open(networkname+".mo","w+")
 system_file.write("within TestSystem;")
 system_file.write("model power_grid\n")
 system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0fe6, fn = %.2f) annotation (Placement(transformation(extent={{-94,80},{-60,100}})));\n" % (float(system_base),float(system_frequency)))
-system_file.write("  TestSystem.Data.pfdata pfdata  annotation (Placement(transformation(extent={{-40,80},{-20,100}})));\n")
+system_file.write("  TestSystem.Data.pfdata pfdata  annotation (Placement(transformation(extent={{-88,60},{-68,80}})));\n")
 system_file.close()
 # ----- Listing buses in the modelica file:
 nameornumber = 1
 if nameornumber == 0:
 	system_file = open(networkname+".mo","a")
 	for ii in range(0,nbuses,1):
-		system_file.write("  OpenIPSL.Electrical.Buses.BusExt %s (V_b = %.1fe3, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d); \n" % (str(BUSNAME[ii]), BUSD[ii,2],int(BUSD[ii,1]),int(BUSD[ii,1]) ))
+		system_file.write("  OpenIPSL.Electrical.Buses.Bus %s (V_b = %.1fe3, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d); \n" % (str(BUSNAME[ii]), BUSD[ii,2],BUSD[ii,1],BUSD[ii,1]))
 	system_file.close()
 else:
 	system_file = open(networkname+".mo","a")
 	for ii in range(0,nbuses,1):
-		system_file.write("  OpenIPSL.Electrical.Buses.BusExt bus_%d (V_b = %.1fe3, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d); \n" % (int(BUSD[ii,1]), BUSD[ii,2],int(BUSD[ii,1]),int(BUSD[ii,1])))
+		system_file.write("  OpenIPSL.Electrical.Buses.Bus bus_%d (V_b = %.1fe3, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d); \n" % (BUSD[ii,1], BUSD[ii,2],BUSD[ii,1],BUSD[ii,1]))
 	system_file.close()
 # ----- Finishing counting time:		
 elapsedtime = time.time() - start_time
