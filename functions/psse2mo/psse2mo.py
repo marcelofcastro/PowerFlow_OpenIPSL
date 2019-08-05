@@ -107,7 +107,6 @@ os.chdir(sysdatadirectory)
 packagemo = open(pkg_name,"w+")
 packagemo.write("within TestSystem;\n")
 packagemo.write("package Data \"Modelica records for power flow data.\" \n\n")
-packagemo.write(" ")
 packagemo.write("end Data;")
 packagemo.close()
 # ----- Creating data package .order file:
@@ -116,7 +115,31 @@ packageorder.write("pfdata\n")
 packageorder.write("voltage_data\n")
 packageorder.write("power_data")
 packageorder.close()
-
+# ----- Writing pfdata .mo file:
+pfdatamo = open("pfdata.mo","w+")
+pfdatamo.write("within TestSystem.Data;\n")
+pfdatamo.write("record pfdata \" Translated and calculated power flow data.\"\n")
+pfdatamo.write("  extends Modelica.Icons.Record;\n")
+pfdatamo.write("  replaceable record voltages = voltage_data constrainedby voltage_data annotation (choicesAllMatching);\n ")
+pfdatamo.write("  replaceable record powers = power_data constrainedby power_data annotation (choicesAllMatching);\n ")
+pfdatamo.write("end pfdata;")
+pfdatamo.close()
+# ----- Writing voltage record:
+vdatamo = open("voltage_data.mo","w+")
+vdatamo.write("within TestSystem.Data;\n")
+vdatamo.write("record voltage_data\n")
+vdatamo.write("  extends Modelica.Icons.Record;\n")
+for ii in range(0,nbuses,1):
+	vdatamo.write("  //Bus %d\n" % (int(BUSD[ii,1])))
+	vdatamo.write("  parameter Real V%d = %.4f;\n" % (int(BUSD[ii,1]), BUSD[ii,7]))
+	vdatamo.write("  parameter Real A%d = %.4f;\n" % (int(BUSD[ii,1]), BUSD[ii,8]))
+vdatamo.write("end voltage_data;")
+# ----- Writing power record:
+vdatamo = open("power_data.mo","w+")
+vdatamo.write("within TestSystem.Data;\n")
+vdatamo.write("record power_data\n")
+vdatamo.write("  extends Modelica.Icons.Record;\n\n")
+vdatamo.write("end power_data;")
 # ----- Creating generators package .mo file:
 os.chdir(sysgensdirectory)
 packagemo = open(pkg_name,"w+")
@@ -133,6 +156,7 @@ system_file = open(networkname+".mo","w+")
 system_file.write("within TestSystem;")
 system_file.write("model power_grid\n")
 system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0fe6, fn = %.2f);\n" % (float(system_base),float(system_frequency)))
+system_file.write("  TestSystem.Data.pfdata pfdata;\n")
 system_file.close()
 # ----- Listing buses in the modelica file:
 nameornumber = 1
@@ -150,7 +174,7 @@ else:
 elapsedtime = time.time() - start_time
 # ----- Ending modelica file:
 system_file = open(networkname+".mo","a")
-system_file.write("end testsystem;")
+system_file.write("end power_grid;")
 system_file.close()
 # ----- Printing report file:
 os.chdir(workingdirectory)
