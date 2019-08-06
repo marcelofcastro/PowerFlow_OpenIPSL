@@ -11,7 +11,7 @@ from numpy.linalg import inv    # importing inv function
 import math                     # importing library for math
 import cmath                    # importing library for complex numbers
 # ----- Initializing the machine:
-macos = 1
+macos = 0
 # ----- Initializing paths:
 homedirectory = os.getcwd()
 if macos == 0:
@@ -99,14 +99,14 @@ with open("testsystem.dyr", "r+") as dyr_file: # opens the file for reading
     	if line[0] != "/": 
     		if line.find("\'USRMDL\'") < 0 and line.find("\'USRMSC\'") < 0:
     			dyrContent.append(line) # adds line
+    			print(line)
 dyr_file.close() # closes the file
-# ----- Finding start and stop indexes in .dyr file:
+# ----- Reading and extracting data from .dyr file:
+aux1 = 0
+aux2 = 0
 for ii in range(0,len(dyrContent),1):
-	stopix = dyrContent[ii].find("/")
-	if stopix > 0:
-		dyrIndex2.append(ii)
-		if ii != (len(dyrContent)-1):
-			dyrIndex1.append(ii+1)
+	stopix = dyrContent[ii].find("\n")
+	print(stopix)
 # ----- Creating system package .mo file:
 os.chdir(systemdirectory)
 packagemo = open(pkg_name,"w+")
