@@ -10,12 +10,20 @@ import numpy as np              # importing numpy
 from numpy.linalg import inv    # importing inv function
 import math                     # importing library for math
 import cmath                    # importing library for complex numbers
+# ----- Initializing the machine:
+macos = 1
 # ----- Initializing paths:
 homedirectory = os.getcwd()
-workingdirectory = "/home/marcelo/Desktop/PyOpenIPSL"
-systemdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem"
-sysdatadirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Data"
-sysgensdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Generators"
+if macos == 0:
+	workingdirectory = "/home/marcelo/Desktop/PyOpenIPSL"
+	systemdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem"
+	sysdatadirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Data"
+	sysgensdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Generators"
+else:
+	workingdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL"
+	systemdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem"
+	sysdatadirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem/Data"
+	sysgensdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem/Generators"
 # ----- Creating working directory:
 try:
 	os.mkdir(workingdirectory)
