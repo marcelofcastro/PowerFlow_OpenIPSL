@@ -1,7 +1,7 @@
 #==========================================================================      
-# Author: Marcelo de Castro Fernandes
+# Authors: marcelofcastro and ManuelNvro
 #           
-# Description: - - -
+# Description: 
 #==========================================================================
 # ----- Init. libraries:
 import os                       # importing operational system
