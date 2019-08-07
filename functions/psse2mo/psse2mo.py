@@ -69,14 +69,10 @@ for ii in range(0,len(rawContent),1):
 	if busix == 0:
 		rawIndex.append(ii)
 # ----- Calculating the size of bus matrix:
-sweep_index = int(rawIndex[0])
-while sweep_index != int(rawIndex[1]):
-	sweep_index += 1
-nbuses = sweep_index - int(rawIndex[0])
+nbuses = int(rawIndex[1])-int(rawIndex[0])-1
 BUSD = np.zeros((nbuses,20)) # initializing bus matrix - 20 here is just a guess
 BUSNAME = [] # initializing bus name array
 # ----- Start retrieving buses:
-sweep_index = int(rawIndex[0]) # bus data starts at Index 0
 for ii in range(0,nbuses,1):
 	line = rawContent[ii+int(rawIndex[0])]
 	BUSD[ii,0] = ii                  # Auxiliary bus number
@@ -111,6 +107,9 @@ while line != len(dyrContent):
 	dyrInfo.append(holding)
 	holding = []
 	line+=1
+# ----- Counting the number of generators in dyrInfo:
+ngens = int(rawIndex[4])-int(rawIndex[3])-1# Generator data starts at Index 3 and ends at Index4
+print(ngens)
 # ----- Creating system package .mo file:
 os.chdir(systemdirectory)
 packagemo = open(pkg_name,"w+")
