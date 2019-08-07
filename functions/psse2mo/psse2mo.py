@@ -107,6 +107,19 @@ aux2 = 0
 for ii in range(0,len(dyrContent),1):
 	stopix = dyrContent[ii].find("\n")
 	print(stopix)
+
+# Get parameters from original dyr file
+line = 0
+holding = []
+while '/' not in dyrContent[line]: #read the lines and add the next line to the last until you find /
+	holding.extend(dyrContent[line].split())
+	line += 1
+holding.extend(dyrContent[line].split()) #get the last element
+line += 1
+holding.pop(len(holding)-1) #delete the / at the end of evevery element
+print(holding)
+
+
 # ----- Creating system package .mo file:
 os.chdir(systemdirectory)
 packagemo = open(pkg_name,"w+")
