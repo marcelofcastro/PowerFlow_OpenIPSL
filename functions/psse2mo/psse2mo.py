@@ -52,8 +52,6 @@ pkg_ordr = "package.order"
 rawContent = []
 dyrContent = []
 rawIndex = [3] # relevant information start at third line
-dyrIndex1 = [0]
-dyrIndex2 = []
 # ----- Opening the .raw file:
 start_time = time.time() # starting to count the time:
 with open("testsystem.raw", "r+") as raw_file: # opens the file for reading
@@ -75,10 +73,10 @@ sweep_index = int(rawIndex[0])
 while sweep_index != int(rawIndex[1]):
 	sweep_index += 1
 nbuses = sweep_index - int(rawIndex[0])
-BUSD = np.zeros((nbuses,20)) # initializing bus matrix
+BUSD = np.zeros((nbuses,20)) # initializing bus matrix - 20 here is just a guess
 BUSNAME = [] # initializing bus name array
 # ----- Start retrieving buses:
-sweep_index = int(rawIndex[0])
+sweep_index = int(rawIndex[0]) # bus data starts at Index 0
 for ii in range(0,nbuses,1):
 	line = rawContent[ii+int(rawIndex[0])]
 	BUSD[ii,0] = ii                  # Auxiliary bus number
@@ -99,27 +97,20 @@ with open("testsystem.dyr", "r+") as dyr_file: # opens the file for reading
     	if line[0] != "/": 
     		if line.find("\'USRMDL\'") < 0 and line.find("\'USRMSC\'") < 0:
     			dyrContent.append(line) # adds line
-    			print(line)
 dyr_file.close() # closes the file
-# ----- Reading and extracting data from .dyr file:
-aux1 = 0
-aux2 = 0
-for ii in range(0,len(dyrContent),1):
-	stopix = dyrContent[ii].find("\n")
-	print(stopix)
-
-# Get parameters from original dyr file
-line = 0
+# ----- Reading and extracting parameters from original .dyr file:
+dyrInfo = []
 holding = []
-while '/' not in dyrContent[line]: #read the lines and add the next line to the last until you find /
+line = 0
+while line != len(dyrContent):
+	while ' /' not in dyrContent[line]: #read the lines and add the next line to the last until you find /
+		holding.extend(dyrContent[line].split()) #get the last element
+		line+=1
 	holding.extend(dyrContent[line].split())
-	line += 1
-holding.extend(dyrContent[line].split()) #get the last element
-line += 1
-holding.pop(len(holding)-1) #delete the / at the end of evevery element
-print(holding)
-
-
+	holding.pop(len(holding)-1) #delete the / at the end of evevery element
+	dyrInfo.append(holding)
+	holding = []
+	line+=1
 # ----- Creating system package .mo file:
 os.chdir(systemdirectory)
 packagemo = open(pkg_name,"w+")
