@@ -73,10 +73,10 @@ nbuses = int(rawIndex[1])-int(rawIndex[0])-1
 BUSD = np.zeros((nbuses,20)) # initializing bus matrix - 20 here is just a guess
 BUSNAME = [] # initializing bus name array
 # ----- Start retrieving buses:
-for ii in range(0,nbuses,1):
+for ii in range(nbuses):
 	line = rawContent[ii+int(rawIndex[0])]
 	BUSD[ii,0] = ii                  # Auxiliary bus number
-	BUSD[ii,1] = int(line[0:6])    # Bus number
+	BUSD[ii,1] = int(line[0:6])      # Bus number
 	BUSNAME.append(line[8:20])       # Bus name
 	BUSD[ii,2] = float(line[22:30])  # Bus base voltage
 	BUSD[ii,3] = float(line[32:33])  # Bus type
@@ -108,8 +108,20 @@ while line != len(dyrContent):
 	holding = []
 	line+=1
 # ----- Counting the number of generators in dyrInfo:
-ngens = int(rawIndex[4])-int(rawIndex[3])-1# Generator data starts at Index 3 and ends at Index4
-print(ngens)
+rawIndex[3] +=1
+ngens = int(rawIndex[4])-int(rawIndex[3])# Generator data starts at Index 3 and ends at Index4
+# ----- Counting the number of devices per generator and number of generators per bus:
+device_info = np.zeros((ngens,3))
+line = 0
+for ii in range(ngens):
+	row = rawContent[ii+int(rawIndex[3])]
+	device_info[ii,0] = int(row[0:6])         # Bus number for machine
+	device_info[ii,2] = int(dyrInfo[line][2]) # Circuit number for machine
+	while int(dyrInfo[line][0]) == device_info[ii,0] and int(dyrInfo[line][2]) == device_info[ii,2]:
+			device_info[ii,1] += 1
+			line+=1
+			if line == len(dyrInfo):
+				break
 # ----- Creating system package .mo file:
 os.chdir(systemdirectory)
 packagemo = open(pkg_name,"w+")
