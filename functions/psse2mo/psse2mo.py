@@ -10,38 +10,42 @@ import numpy as np              # importing numpy
 from numpy.linalg import inv    # importing inv function
 import math                     # importing library for math
 import cmath                    # importing library for complex numbers
-# ----- Initializing the machine:
-macos = 0
+import shutil					# importing library to overwrite folders
+from tkinter.filedialog import askdirectory 
 # ----- Initializing paths:
 homedirectory = os.getcwd()
-if macos == 0:
-	workingdirectory = "/home/marcelo/Desktop/PyOpenIPSL"
-	systemdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem"
-	sysdatadirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Data"
-	sysgensdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Generators"
-else:
-	workingdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL"
-	systemdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem"
-	sysdatadirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem/Data"
-	sysgensdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem/Generators"
+userpath = askdirectory()
+workingdirectory = userpath + "/PyOpenIPSL"
+systemdirectory = userpath + "/PyOpenIPSL/TestSystem"
+sysdatadirectory = userpath + "/PyOpenIPSL/TestSystem/Data"
+sysgensdirectory = userpath + "/PyOpenIPSL/TestSystem/Generators"
 # ----- Creating working directory:
 try:
+	if os.path.exists(workingdirectory):
+		shutil.rmtree(workingdirectory)
 	os.mkdir(workingdirectory)
 except OSError:
     print ("Creation of the directory %s failed" % workingdirectory) 
 # ----- Creating package directory:
 try:
+	if os.path.exists(systemdirectory):
+		shutil.rmtree(systemdirectory)
 	os.mkdir(systemdirectory)
 except OSError:
     print ("Creation of the directory %s failed" % systemdirectory) 
 # ----- Creating systems data directory:
 try:
+	if os.path.exists(sysdatadirectory):
+		shutil.rmtree(sysdatadirectory)
 	os.mkdir(sysdatadirectory)
 except OSError:
     print ("Creation of the directory %s failed" % sysdatadirectory) 
 # ----- Creating systems generators directory:
 try:
+	if os.path.exists(sysgensdirectory):
+		shutil.rmtree(sysgensdirectory)
 	os.mkdir(sysgensdirectory)
+
 except OSError:
     print ("Creation of the directory %s failed" % sysgensdirectory) 
 # ----- Initializing file name:
