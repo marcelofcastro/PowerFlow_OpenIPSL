@@ -10,6 +10,7 @@ import numpy as np              # importing numpy
 from numpy.linalg import inv    # importing inv function
 import math                     # importing library for math
 import cmath                    # importing library for complex numbers
+import shutil					# importing library to overwrite folders
 # ----- Initializing the machine:
 macos = 0
 # ----- Initializing paths:
@@ -26,22 +27,31 @@ else:
 	sysgensdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem/Generators"
 # ----- Creating working directory:
 try:
+	if os.path.exists(workingdirectory):
+		shutil.rmtree(workingdirectory)
 	os.mkdir(workingdirectory)
 except OSError:
     print ("Creation of the directory %s failed" % workingdirectory) 
 # ----- Creating package directory:
 try:
+	if os.path.exists(systemdirectory):
+		shutil.rmtree(systemdirectory)
 	os.mkdir(systemdirectory)
 except OSError:
     print ("Creation of the directory %s failed" % systemdirectory) 
 # ----- Creating systems data directory:
 try:
+	if os.path.exists(sysdatadirectory):
+		shutil.rmtree(sysdatadirectory)
 	os.mkdir(sysdatadirectory)
 except OSError:
     print ("Creation of the directory %s failed" % sysdatadirectory) 
 # ----- Creating systems generators directory:
 try:
+	if os.path.exists(sysgensdirectory):
+		shutil.rmtree(sysgensdirectory)
 	os.mkdir(sysgensdirectory)
+
 except OSError:
     print ("Creation of the directory %s failed" % sysgensdirectory) 
 # ----- Initializing file name:
