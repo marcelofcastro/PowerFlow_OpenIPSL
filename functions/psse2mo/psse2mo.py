@@ -11,20 +11,14 @@ from numpy.linalg import inv    # importing inv function
 import math                     # importing library for math
 import cmath                    # importing library for complex numbers
 import shutil					# importing library to overwrite folders
-# ----- Initializing the machine:
-macos = 0
+from tkinter.filedialog import askdirectory 
 # ----- Initializing paths:
 homedirectory = os.getcwd()
-if macos == 0:
-	workingdirectory = "/home/marcelo/Desktop/PyOpenIPSL"
-	systemdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem"
-	sysdatadirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Data"
-	sysgensdirectory = "/home/marcelo/Desktop/PyOpenIPSL/TestSystem/Generators"
-else:
-	workingdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL"
-	systemdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem"
-	sysdatadirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem/Data"
-	sysgensdirectory = "/Users/marcelodecastrofernandes/Desktop/PyOpenIPSL/TestSystem/Generators"
+userpath = askdirectory()
+workingdirectory = userpath + "/PyOpenIPSL"
+systemdirectory = userpath + "/PyOpenIPSL/TestSystem"
+sysdatadirectory = userpath + "/PyOpenIPSL/TestSystem/Data"
+sysgensdirectory = userpath + "/PyOpenIPSL/TestSystem/Generators"
 # ----- Creating working directory:
 try:
 	if os.path.exists(workingdirectory):
