@@ -1,7 +1,7 @@
 #==========================================================================      
 # Authors: marcelofcastro and ManuelNvro
 #           
-# Description: 
+# Description: Code to translate .raw and .dyr files into .mo files
 #==========================================================================
 # ----- Init. libraries:
 import os                       # importing operational system
