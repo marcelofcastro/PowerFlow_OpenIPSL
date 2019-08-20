@@ -19,6 +19,16 @@ workingdirectory = userpath + "/PyOpenIPSL"
 systemdirectory = userpath + "/PyOpenIPSL/TestSystem"
 sysdatadirectory = userpath + "/PyOpenIPSL/TestSystem/Data"
 sysgensdirectory = userpath + "/PyOpenIPSL/TestSystem/Generators"
+# ----- Initializing dictionary:
+# Generators:
+Gens = ['GENCLS','GENROE','GENROU','GENSAE','GENSAL']
+GenP = [['H','D'],['Tpd0','Tppd0','Tpq0','Tppq0','H','D','Xd','Xq','Xpd','Xpq','Xppd','Xl','S10','S12'],['Tpd0','Tppd0','Tpq0','Tppq0','H','D','Xd','Xq','Xpd','Xpq','Xppd','Xl','S10','S12'],['Tpd0','Tppd0','Tppq0','H','D','Xd','Xq','Xpd','Xppd','Xl','S10','S12'],['Tpd0','Tppd0','Tppq0','H','D','Xd','Xq','Xpd','Xppd','Xl','S10','S12']]
+# Exciters:
+Excs = ['IEEET1','SCRX','SEXS']
+ExcP = [['T_R','K_A','T_A','V_RMAX','V_RMIN','K_E','T_E','K_F','T_F','SW','E_1','S_EE_1','E_2','S_EE_2'],['T_AT_B','T_B','K','T_E','E_MIN','E_MAX','C_SWITCH','r_cr_fd'],['T_AT_B','T_B','K','T_E','E_MIN','E_MAX']]
+# Turbine and Governors:
+Govs = ['HYGOV','TGOV1']
+GovP = [['R','r','T_r','T_f','T_g','VELM','G_MAX','G_MIN','T_w','A_t','D_turb','q_NL'],['R','T_1','V_MAX','V_MIN','T_2','T_3','D_t']]
 # ----- Creating working directory:
 try:
 	if os.path.exists(workingdirectory):
@@ -187,16 +197,25 @@ packagemo.write("end Generators;")
 packagemo.close()
 # ----- Creating generators package .order file:
 packageorder = open(pkg_ordr,"w+")
+for ii in range(len(device_info)):
+	packageorder.write('Gen_%d\n' % (device_info[ii,0]))
 packageorder.close()
+# ----- Writing each generator .mo file:
+for ii in range(len(device_info)):
+	genname = "Gen_"+str(int(device_info[ii,0]))
+	genmo = open(genname+".mo","w+")
+	genmo.write("within TestSystem.Generators\n")
+	genmo.write("model %s\n" % genname)
+	genmo.write("end %s;" % genname)
 # ----- Creating and writing system data into modelica system file:
 os.chdir(systemdirectory)
 system_file = open(networkname+".mo","w+")
 system_file.write("within TestSystem;")
-system_file.write("model power_grid\n")
+system_file.write("model %s\n" % (str(networkname)))
 system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0fe6, fn = %.2f) annotation (Placement(transformation(extent={{-94,80},{-60,100}})));\n" % (float(system_base),float(system_frequency)))
 system_file.write("  TestSystem.Data.pfdata pfdata  annotation (Placement(transformation(extent={{-88,60},{-68,80}})));\n")
 system_file.close()
-# ----- Listing buses in the modelica file:
+# Listing buses in the modelica file:
 nameornumber = 1
 if nameornumber == 0:
 	system_file = open(networkname+".mo","a")
@@ -208,12 +227,17 @@ else:
 	for ii in range(0,nbuses,1):
 		system_file.write("  OpenIPSL.Electrical.Buses.Bus bus_%d (V_b = %.1fe3, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d); \n" % (BUSD[ii,1], BUSD[ii,2],BUSD[ii,1],BUSD[ii,1]))
 	system_file.close()
-# ----- Finishing counting time:		
-elapsedtime = time.time() - start_time
+# Listing all generators in modelica file:
+system_file = open(networkname+".mo","a")
+for ii in range(len(device_info)):
+	system_file.write("  TestSystem.Generators.Gen_%d gen_%d;" % (device_info[ii,0],device_info[ii,0]))
+system_file.close()
 # ----- Ending modelica file:
 system_file = open(networkname+".mo","a")
-system_file.write("end power_grid;")
+system_file.write("end %s;" % (str(networkname)))
 system_file.close()
+# ----- Finishing counting time:		
+elapsedtime = time.time() - start_time
 # ----- Printing report file:
 os.chdir(workingdirectory)
 report = open("report_file.txt","w+")
@@ -227,6 +251,4 @@ report.write("System frequency: %.0f Hz\n" % (float(system_frequency)))
 report.write("=================================================================\n")
 report.close()
 # ----- Printing intermediate files:
-#for each in BUSNAME:
-#	print each
-#np.savetxt('BUS.txt',BUS, fmt='%.4f')
+#np.savetxt('dev.txt',device_info, fmt='%.4f')
