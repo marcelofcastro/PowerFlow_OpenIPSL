@@ -1,7 +1,6 @@
 #==========================================================================      
-# Authors: marcelofcastro and ManuelNvro
-#           
-# Description: Code to translate .raw and .dyr files into .mo files
+# Authors: marcelofcastro and ManuelNvro     
+# Description: Functions used to translate .raw and .dyr files into .mo files
 #==========================================================================
 # ----- Init. libraries:
 import os                       # importing operational system
@@ -12,13 +11,25 @@ import math                     # importing library for math
 import cmath                    # importing library for complex numbers
 import shutil					# importing library to overwrite folders
 from tkinter.filedialog import askdirectory 
-# ----- Initializing paths:
-homedirectory = os.getcwd()
-userpath = askdirectory()
-workingdirectory = userpath + "/PyOpenIPSL"
-systemdirectory = userpath + "/PyOpenIPSL/TestSystem"
-sysdatadirectory = userpath + "/PyOpenIPSL/TestSystem/Data"
-sysgensdirectory = userpath + "/PyOpenIPSL/TestSystem/Generators"
+#====================================================================================      
+# Function: readRaw
+# Authors: marcelofcastro and ManuelNvro          
+# Description: this function asks for and reads the Raw file
+#====================================================================================
+rawIndex = [3] # relevant information start at third line
+def readRaw(rawfile):
+	rawContent = []	
+	# ----- Opening the .raw file:
+	with open(rawfile, "r+") as raw_file: # opens the raw file for reading
+		for line in raw_file:
+			rawContent.append(line) # adds line
+	raw_file.close() # closes the raw file
+	# ----- Finding specific parameters:
+	FirstLine = rawContent[0]
+	system_base = float(FirstLine[2:10])
+	psse_version = float(FirstLine[12:15])
+	system_frequency = float(FirstLine[22:27])
+	return [rawContent,system_base,psse_version,system_frequency]
 # ----- Initializing dictionary:
 # Generators:
 Gens = ['GENCLS','GENROE','GENROU','GENSAE','GENSAL']
@@ -29,35 +40,6 @@ ExcP = [['T_R','K_A','T_A','V_RMAX','V_RMIN','K_E','T_E','K_F','T_F','SW','E_1',
 # Turbine and Governors:
 Govs = ['HYGOV','TGOV1']
 GovP = [['R','r','T_r','T_f','T_g','VELM','G_MAX','G_MIN','T_w','A_t','D_turb','q_NL'],['R','T_1','V_MAX','V_MIN','T_2','T_3','D_t']]
-# ----- Creating working directory:
-try:
-	if os.path.exists(workingdirectory):
-		shutil.rmtree(workingdirectory)
-	os.mkdir(workingdirectory)
-except OSError:
-    print ("Creation of the directory %s failed" % workingdirectory) 
-# ----- Creating package directory:
-try:
-	if os.path.exists(systemdirectory):
-		shutil.rmtree(systemdirectory)
-	os.mkdir(systemdirectory)
-except OSError:
-    print ("Creation of the directory %s failed" % systemdirectory) 
-# ----- Creating systems data directory:
-try:
-	if os.path.exists(sysdatadirectory):
-		shutil.rmtree(sysdatadirectory)
-	os.mkdir(sysdatadirectory)
-except OSError:
-    print ("Creation of the directory %s failed" % sysdatadirectory) 
-# ----- Creating systems generators directory:
-try:
-	if os.path.exists(sysgensdirectory):
-		shutil.rmtree(sysgensdirectory)
-	os.mkdir(sysgensdirectory)
-
-except OSError:
-    print ("Creation of the directory %s failed" % sysgensdirectory) 
 # ----- Initializing file name:
 networkname = "power_grid"
 pkg_name = "package.mo"
@@ -66,17 +48,6 @@ pkg_ordr = "package.order"
 rawContent = []
 dyrContent = []
 rawIndex = [3] # relevant information start at third line
-# ----- Opening the .raw file:
-start_time = time.time() # starting to count the time:
-with open("testsystem.raw", "r+") as raw_file: # opens the file for reading
-    for line in raw_file:
-        rawContent.append(line)     # adds line
-raw_file.close() # closes the file
-# ----- Finding specific parameters:
-FirstLine = rawContent[0]
-system_base = float(FirstLine[2:10])
-psse_version = float(FirstLine[12:15])
-system_frequency = float(FirstLine[22:27])
 # ----- Finding indexes for bus data:
 for ii in range(0,len(rawContent),1):
 	busix = rawContent[ii].find("0 /")
