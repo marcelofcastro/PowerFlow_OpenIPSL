@@ -1,16 +1,21 @@
-#========================================================================== 
+#================================================================================== 
 # Code Part: Loading libraries     
-# Author: Marcelo de Castro Fernandes
-#           
-# Description: Loading libraries the whole system
-#==========================================================================
-from Tkinter import *
-import tkFileDialog
-import tkMessageBox
+# Author: marcelofcastro         
+# Description: Loading libraries the whole system. Compatible with python 2. and 3.
+#==================================================================================
+try:
+    # for Python2
+    from Tkinter import *   ## notice capitalized T in Tkinter 
+    import tkFileDialog
+    import tkMessageBox
+except ImportError:
+    # for Python3
+    from tkinter import *   ## notice lowercase 't' in tkinter here
+    import tkinter.filedialog as tkFileDialog
+    import tkinter.messagebox as tkMessageBox
 #========================================================================== 
 # Code Part: Function definition:  
-# Author: Marcelo de Castro Fernandes
-#           
+# Author: marcelofcastro         
 # Description: Definition of functions for reading files.
 #========================================================================== 
 def donothing():
@@ -33,12 +38,11 @@ def readmo():
     out_file.write("\n Connection starts at line %f \n\n" % (float(index_eq)))    
 #========================================================================== 
 # Code Part: Graphical User Interface   
-# Author: Marcelo de Castro Fernandes
-#           
+# Author: marcelofcastro          
 # Description: Python GUI interface for OpenIPSL initialization software.
 #==========================================================================  
 root = Tk()
-root.title("OpenIPSL Initial Conditions")
+root.title("Model Translation Tool")
 menubar = Menu(root)
 filemenu = Menu(menubar, tearoff=0)
 filemenu.add_command(label="Load", command=readmo)
