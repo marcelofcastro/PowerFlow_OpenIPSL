@@ -1,11 +1,35 @@
 #====================================================================================      
 # Authors: marcelofcastro and ManuelNvro          
-# Description: Definition of functions to create, select and change directories. 
+# Description: Definition of functions to create, select and change directories or 
+# files. 
 #====================================================================================
 # ----- Init. libraries:
 import os # importing operational system
 import shutil	# importing library to overwrite folders
-from tkinter.filedialog import askdirectory # importing library to ask directory
+#====================================================================================      
+# Function: askDir
+# Authors: marcelofcastro and ManuelNvro          
+# Description: this function ask for directories.
+#====================================================================================
+def askDir(): # note that here the dir stands for directory
+	userpath = tkFileDialog.askdirectory()
+	return userpath
+#====================================================================================      
+# Function: askRaw
+# Authors: marcelofcastro and ManuelNvro          
+# Description: this function ask for raw files.
+#====================================================================================
+def askRaw():
+	rawfile = tkFileDialog.askopenfilename(filetypes=[("Raw files", ".raw")])
+	return rawfile
+#====================================================================================      
+# Function: askDyr
+# Authors: marcelofcastro and ManuelNvro          
+# Description: this function ask for dyr files.
+#====================================================================================
+def askDyr(): # note that here dyr stands for dynamic raw file
+	dyrfile = tkFileDialog.askopenfilename(filetypes=[("Dyr files", ".dyr")])
+	return dyrfile
 #====================================================================================      
 # Function: createDir
 # Authors: marcelofcastro and ManuelNvro          
