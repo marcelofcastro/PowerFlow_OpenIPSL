@@ -35,10 +35,9 @@ def donothing():
     button = Button(filewin, text="Do nothing button")
     button.pack()
 def frompsse():
-    rawfile = tkFileDialog.askopenfilename(filetypes=[("Raw files", ".raw")])
-    [bus,system_base,psse_version,system_frequency] = psse2mo.readRaw(rawfile)
-    message = " PSS(R)E version from .raw file: %.0f.\n System power base: %.2f MVA.\n System frequency: %.0f Hz." % (float(psse_version),float(system_base),float(system_frequency))
-    tkMessageBox.showinfo("Raw file reading succesful", message)
+    rawfile = directory_functions.askRawfile()
+    [bus,branch] = psse2mo.readRaw(rawfile)
+
     #userpath = tkFileDialog.askdirectory() # get directory where user wants files to be placed
     #directory_functions.createDir(userpath) # creates folders for placement of results   
 #==================================================================================
