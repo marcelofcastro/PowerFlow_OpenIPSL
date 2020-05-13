@@ -19,7 +19,7 @@ def askDir(): # note that here the dir stands for directory
 # Authors: marcelofcastro and ManuelNvro          
 # Description: this function ask for raw files.
 #====================================================================================
-def askRaw():
+def askRawfile():
 	rawfile = tkFileDialog.askopenfilename(filetypes=[("Raw files", ".raw")])
 	return rawfile
 #====================================================================================      
@@ -27,7 +27,7 @@ def askRaw():
 # Authors: marcelofcastro and ManuelNvro          
 # Description: this function ask for dyr files.
 #====================================================================================
-def askDyr(): # note that here dyr stands for dynamic raw file
+def askDyrfile(): # note that here dyr stands for dynamic raw file
 	dyrfile = tkFileDialog.askopenfilename(filetypes=[("Dyr files", ".dyr")])
 	return dyrfile
 #====================================================================================      
