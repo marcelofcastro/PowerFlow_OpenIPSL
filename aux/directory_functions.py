@@ -6,6 +6,8 @@
 # ----- Init. libraries:
 import os # importing operational system
 import shutil	# importing library to overwrite folders
+import tkinter.filedialog as tkFileDialog # functions for asking for dirs and files
+import tkinter.messagebox as tkMessageBox # functions for meassage box
 #====================================================================================      
 # Function: askDir
 # Authors: marcelofcastro and ManuelNvro          
@@ -40,32 +42,36 @@ def createDir(userpath):
 	workingdirectory = userpath + "/Translation" # name of main folder
 	systemdirectory = userpath + "/Translation/System" # name of test system folder
 	sysdatadirectory = userpath + "/Translation/System/Data" # name of data folder
-	sysgensdirectory = userpath + "/Translation/System/Generators" # name of plant data folder
+	sysgensdirectory = userpath + "/Translation/System/Machines" # name of plant data folder
 	# ----- Creation of working directory called Translation:
 	try:
 		if os.path.exists(workingdirectory):
 			shutil.rmtree(workingdirectory)
 		os.mkdir(workingdirectory)
 	except OSError:
-		print ("Creation of the directory %s failed" % workingdirectory)
+		errmessage = "Creation of the directory %s failed" % workingdirectory
+		tkMessageBox.showinfo("Error in creating directory", errmessage)
 	# ----- Creation of package directory:
 	try:
 		if os.path.exists(systemdirectory):
 			shutil.rmtree(systemdirectory)
 		os.mkdir(systemdirectory)
 	except OSError:
-		print ("Creation of the directory %s failed" % systemdirectory)
+		errmessage = "Creation of the directory %s failed" % systemdirectory
+		tkMessageBox.showinfo("Error in creating directory", errmessage)
 	# ----- Creation of systems data directory:
 	try:
 		if os.path.exists(sysdatadirectory):
 			shutil.rmtree(sysdatadirectory)
 		os.mkdir(sysdatadirectory)
 	except OSError:
-		print ("Creation of the directory %s failed" % sysdatadirectory)
+		errmessage = "Creation of the directory %s failed" % sysdatadirectory
+		tkMessageBox.showinfo("Error in creating directory", errmessage)
 	# ----- Creation of systems generators directory:
 	try:
 		if os.path.exists(sysgensdirectory):
 			shutil.rmtree(sysgensdirectory)
 		os.mkdir(sysgensdirectory)
 	except OSError:
-		print ("Creation of the directory %s failed" % sysgensdirectory)
+		errmessage = "Creation of the directory %s failed" % sysgensdirectory
+		tkMessageBox.showinfo("Error in creating directory", errmessage)
