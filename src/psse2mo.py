@@ -1,5 +1,4 @@
-#=========================================================================================    
-# Authors: marcelofcastro and ManuelNvro     
+#=========================================================================================      
 # Description: Functions used to translate .raw and .dyr files into .mo files.
 #=========================================================================================  
 # ----- Init. libraries:
@@ -14,7 +13,7 @@ import argparse # importing additional libraries
 import logging # importing additional libraries
 #=========================================================================================      
 # Function: getRawBase
-# Authors: marcelofcastro and ManuelNvro          
+# Authors: marcelofcastro        
 # Description: this function asks for and transforms raw file in list of objects.
 # The function also extracts info about the system so it can be confirmed by user.
 #=========================================================================================
@@ -54,7 +53,7 @@ def readRaw(rawfile):
 	return [system_base,system_frequency,sysdata]
 #=========================================================================================      
 # Function: writeSysMo
-# Authors: marcelofcastro and ManuelNvro         
+# Authors: marcelofcastro        
 # Description: It writes the files needed for system package.
 #=========================================================================================
 def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base):
@@ -93,7 +92,7 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	system_file.close()
 #=========================================================================================      
 # Function: writeDataMo
-# Authors: marcelofcastro and ManuelNvro         
+# Authors: marcelofcastro       
 # Description: It writes the files needed for data package.
 #=========================================================================================
 def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
@@ -145,7 +144,7 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 	pdatamo.write("end power_data;")
 #=========================================================================================      
 # Function: writeGenMo
-# Authors: marcelofcastro and ManuelNvro         
+# Authors: marcelofcastro        
 # Description: It writes the network package.
 #=========================================================================================
 def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata):
@@ -174,7 +173,7 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata):
 		genmo.write("end %s;" % genname)
 #=========================================================================================      
 # Function: writeMo
-# Authors: marcelofcastro and ManuelNvro         
+# Authors: marcelofcastro       
 # Description: It uses the data from readRaw and readDyr to build the system in Modelica.
 #=========================================================================================
 def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata):
