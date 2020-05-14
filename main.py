@@ -36,8 +36,11 @@ def donothing():
     button.pack()
 def frompsse():
     rawfile = directory_functions.askRawfile()
-    [bus,branch] = psse2mo.readRaw(rawfile)
-
+    [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile)
+    userpath = directory_functions.askDir()
+    [wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath)
+    psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata)
+    # print(bus.iloc[1,1])
     #userpath = tkFileDialog.askdirectory() # get directory where user wants files to be placed
     #directory_functions.createDir(userpath) # creates folders for placement of results   
 #==================================================================================
