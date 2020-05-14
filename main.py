@@ -14,15 +14,15 @@ except ImportError:
     from tkinter import *   ## notice lowercase 't' in tkinter here
     import tkinter.filedialog as tkFileDialog
     import tkinter.messagebox as tkMessageBox
-# ----- Importing sys module
+# ----- Importing sys module:
 import sys, os
 homedir= os.getcwd()
-# ----- Adding paths for new modules
+# ----- Adding paths for new modules:
 srcdir = homedir+ "/src"
 auxdir = homedir + "/aux"
 sys.path.insert(1, srcdir)
 sys.path.insert(2, auxdir)
-# ----- Importing auxiliary functions
+# ----- Importing auxiliary functions:
 import directory_functions
 import psse2mo
 #==================================================================================
@@ -35,14 +35,11 @@ def donothing():
     button = Button(filewin, text="Do nothing button")
     button.pack()
 def frompsse():
-    rawfile = directory_functions.askRawfile()
-    [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile)
-    userpath = directory_functions.askDir()
-    [wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath)
+    rawfile = directory_functions.askRawfile() # ask the user which raw file transform
+    [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile) # parse rawfile for sysdata
+    userpath = directory_functions.askDir() # get directory where user wants files to be placed
+    [wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath) # creates folders for placement of results   
     psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata)
-    # print(bus.iloc[1,1])
-    #userpath = tkFileDialog.askdirectory() # get directory where user wants files to be placed
-    #directory_functions.createDir(userpath) # creates folders for placement of results   
 #==================================================================================
 # Code Part: Graphical User Interface   
 # Author: marcelofcastro          
