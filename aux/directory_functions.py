@@ -75,3 +75,4 @@ def createDir(userpath):
 	except OSError:
 		errmessage = "Creation of the directory %s failed" % sysgensdirectory
 		tkMessageBox.showinfo("Error in creating directory", errmessage)
+	return [workingdirectory,systemdirectory,sysdatadirectory,sysgensdirectory]
