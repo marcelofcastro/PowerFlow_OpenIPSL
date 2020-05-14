@@ -1,7 +1,7 @@
-#====================================================================================      
+#=========================================================================================      
 # Authors: marcelofcastro        
 # Description: Definition of classes for network structure. 
-#====================================================================================
+#=========================================================================================
 #=========================================================================================      
 # Class: Node
 # Authors: marcelofcastro         
@@ -16,7 +16,6 @@ class Node:
 		self.busType = busType # bus type (1,2,3,4)
 		self.busVoltage = busVoltage # bus voltage magnitude in per unit
 		self.busAngle = busAngle # bus voltage angle in degrees
-
 class Branch:
 	def __init__(self, busFrom, busTo, branchNmbr,branchR, branchX, branchB):
 		self.busFrom = busFrom
