@@ -33,7 +33,7 @@ def askDyrfile(): # note that here dyr stands for dynamic raw file
 	return dyrfile
 #====================================================================================      
 # Function: createDir
-# Authors: marcelofcastro and ManuelNvro          
+# Authors: ManuelNvro          
 # Description: this function creates the folder and subfolders for model translation
 #====================================================================================
 def createDir(userpath):
