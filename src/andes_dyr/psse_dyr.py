@@ -9,28 +9,6 @@ from collections import defaultdict
 logger = logging.getLogger(__name__)
 
 
-def testlines(fid):
-    """
-    Check the raw file for frequency base
-    """
-    first = fid.readline()
-    first = first.strip().split('/')
-    first = first[0].split(',')
-
-    # get raw file version
-    if len(first) >= 3:
-        version = int(first[2])
-        logger.debug(f'PSSE raw version {version} detected')
-
-        if version < 32 or version > 33:
-            logger.warning('RAW file is not v32 or v33. Errors may occur.')
-
-        return True
-
-    else:
-        return False
-
-
 def _read_dyr_dict(file):
     """
     Parse dyr file into a dict where keys are model names and values are dataframes.
