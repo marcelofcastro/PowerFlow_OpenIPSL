@@ -9,7 +9,7 @@ from collections import defaultdict
 logger = logging.getLogger(__name__)
 
 
-def _read_dyr_dict(file):
+def parse_dyr(file):
     """
     Parse dyr file into a dict where keys are model names and values are dataframes.
     """

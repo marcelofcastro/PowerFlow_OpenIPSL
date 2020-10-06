@@ -53,6 +53,14 @@ def readRaw(rawfile):
 	# df_bus=sysdata['bus']
 	return [system_base,system_frequency,sysdata]
 #=========================================================================================      
+# Function: readDyr
+# Authors: marcelofcastro and cuihantao          
+# Description: 
+#=========================================================================================
+def readDyr(dyrfile):
+	dyr_data=parse_dyr(dyrfile)
+	return [dyrdata]
+#=========================================================================================      
 # Function: writeSysMo
 # Authors: marcelofcastro        
 # Description: It writes the files needed for system package.
