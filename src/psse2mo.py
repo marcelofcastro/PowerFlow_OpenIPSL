@@ -8,7 +8,8 @@ from network_structure import Branch # object class for buses
 import tkinter as tk # importing tk for GUI
 import tkinter.messagebox as tkMessageBox # functions for meassage box
 import tkinter.ttk as ttk # functions for displaying lists
-from em_psse import * # importing PARSER
+from em_psse import * # importing raw PARSER
+from andes_dyr import * # importing dyr PARSER
 import argparse # importing additional libraries
 import logging # importing additional libraries
 #=========================================================================================      
@@ -23,14 +24,14 @@ def getRawBase(rawfile):
 	with open(rawfile, "r+") as raw_file: # opens the raw file for reading
 		for line in raw_file:
 			rawContent.append(line) # adds line
-	raw_file.close() # closes the raw file
+	FirstLine = rawContent[0].strip().split('/')
+	FirstLine = FirstLine[0].split(',')
 	# ----- Finding specific parameters:
-	FirstLine = rawContent[0] # finding first line of raw file
-	system_base = float(FirstLine[2:10]) # finding system base in first line
-	psse_version = float(FirstLine[12:15]) # finding psse version in first line
-	system_frequency = float(FirstLine[22:27]) # finding system_frequency in first line
+	system_base = float(FirstLine[1]) # finding system base in first line
+	psse_version = float(FirstLine[2]) # finding psse version in first line
+	system_frequency = float(FirstLine[5]) # finding system_frequency in first line
 	# ----- Message for confirming data is correct:
-	message = " PSS(R)E version: %.0f.\n System power base: %.2f MVA.\n System frequency: %.2f Hz." % (float(psse_version),float(system_base),float(system_frequency))
+	message = " PSS(R)E version: %.0f.\n System power base: %.2f MVA.\n System frequency: %.2f Hz." % (psse_version,system_base,system_frequency)
 	tkMessageBox.showinfo("PSSE File Parsed", message) # displays psse version, base power and system frequency
 	return [system_base,system_frequency]
 #=========================================================================================      
