@@ -3,8 +3,9 @@
 #=========================================================================================  
 # ----- Init. libraries:
 import os
-from network_structure import Node # object class for buses
-from network_structure import Branch # object class for buses
+from network_structure import DynSys # object class for buses
+from network_structure import DynNode # object class for buses
+from network_structure import DynCircuit # object class for buses
 import tkinter as tk # importing tk for GUI
 import tkinter.messagebox as tkMessageBox # functions for meassage box
 import tkinter.ttk as ttk # functions for displaying lists
@@ -36,10 +37,10 @@ def getRawBase(rawfile):
 	return [system_base,system_frequency]
 #=========================================================================================      
 # Function: readRaw
-# Authors: marcelofcastro and anderson-optimization          
+# Authors: anderson-optimization and marcelofcastro          
 # Description: It uses the PSSE parser developed by https://github.com/anderson-optimization
 # The parser can be found in https://github.com/anderson-optimization/em-psse. In 
-# addition, the code also extracts information about the system
+# addition, the code also extracts information about the system.
 #=========================================================================================
 def readRaw(rawfile):
 	raw_data=parse_raw(rawfile)
@@ -54,12 +55,71 @@ def readRaw(rawfile):
 	return [system_base,system_frequency,sysdata]
 #=========================================================================================      
 # Function: readDyr
-# Authors: marcelofcastro and cuihantao          
-# Description: 
+# Authors: cuihantao and marcelofcastro          
+# Description: It uses the PSSE DYR parser developed by https://github.com/cuihantao
+# The expanded by marcelofcastro to be compatible with OpenIPSL models. 
+# The function returns each model and the data used in each model.
 #=========================================================================================
 def readDyr(dyrfile):
-	dyr_data=parse_dyr(dyrfile)
-	return [dyrdata]
+	dyrdata=parse_dyr(dyrfile)
+	return dyrdata
+#=========================================================================================      
+# Function: Dyr
+# Authors: marcelofcastro          
+# Description: It organizes the information from dyr file to facilitate model writing.
+#=========================================================================================
+def formatDyr(dyrdata,sysdata):
+	# ----- Getting gens (IT WILL BE REMOVED LATER):
+	gendata = sysdata['gen']
+	# ----- Lists of models:
+	macmodels = ['GENCLS','GENSAL','GENSAE','GENROU','GENROE','CSVGN1']
+	excmodels = ['EXDC2','IEEEX1','SEXS','EXST1','ESDC2A']
+	govmodels = ['TGOV1','IEEEG1']
+	pssmodels = ['IEEEST']
+	# ----- Looking for systems:
+	for ii in range(len(gendata)):
+		busnumber = gendata.iloc[ii,0]
+		for mac in macmodels:
+			try:
+				macinstances = dyrdata[str(mac)]
+
+	# genname = str(genmodels[1])
+	# gen = dyrdata[genname]
+	# print(gen.iloc[0,0])
+	# print(gen)
+	#busdata = sysdata['bus']
+	#bn = int(busdata.iloc[0])
+	print(sysdata['gen'])
+	# for gen in genmodels:
+	# 	try:
+	# 		gens = dyrdata[str(gen)]
+	# 		print(gens.iloc[0,0])
+	# 	except:
+	# 		continue
+		#gentest = dyrdata[gen]
+		#print(gentest[0])
+#=========================================================================================      
+# Function: loofFor
+# Authors: marcelofcastro          
+# Description: It finds models connected to a particular bus.
+#=========================================================================================
+def lookFor(modeltype,dyrdata,bus,circuit):	
+	# ----- Lists of models:
+	macmodels = ['GENCLS','GENSAL','GENSAE','GENROU','GENROE','CSVGN1']
+	excmodels = ['EXDC2','IEEEX1','SEXS','EXST1','ESDC2A']
+	govmodels = ['TGOV1','IEEEG1']
+	pssmodels = ['IEEEST']
+	# ----- Determining which list will be used:
+	if modeltype == 'machines':
+		models = macmodels
+	elif modeltype == 'exciter':
+		models = excmodels
+	elif modeltype == 'governors':
+		models = govmodels
+	elif modeltype == 'stabilizer':
+		models = pssmodels
+	# ----- Searching for model:
+
 #=========================================================================================      
 # Function: writeSysMo
 # Authors: marcelofcastro        
