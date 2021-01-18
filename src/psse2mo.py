@@ -75,11 +75,11 @@ def lookFor(modeltype,bus,circuit,dyrdata):
 	govmodels = ['TGOV1','IEEEG1','HYGOV','GGOV1']
 	pssmodels = ['IEEEST']
 	# ----- Determining which list will be used:
-	if modeltype == 'machines':
+	if modeltype == 'machine':
 		models = macmodels
 	elif modeltype == 'exciter':
 		models = excmodels
-	elif modeltype == 'governors':
+	elif modeltype == 'governor':
 		models = govmodels
 	elif modeltype == 'stabilizer':
 		models = pssmodels
@@ -190,7 +190,7 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	# Starting CONNECTION OF GENERATION UNITS:
 	system_file.write("// Connecting generation units:\n")
 	for ii in range(len(gens)):
-		system_file.write("  connect(gen%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(gens.iloc[ii,0]),int(gens.iloc[ii,0])))
+		system_file.write("  connect(gen%d_%d.p,bus_%d.p); \n" % ((ii+1),int(gens.iloc[ii,0]),int(gens.iloc[ii,0])))
 	# Closing file modelica file:
 	system_file.write("end %s;" % (str(networkname)))
 	system_file.close()
@@ -252,65 +252,171 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 # Authors: marcelofcastro        
 # Description: It writes machine model.
 #=========================================================================================
-def writeMac(genpdata,genbdata,dyrdata,result,file):
+def writeMac(genpdata,index,dyrdata,result,file):
 	# ----- Extract results:
 	model = result[0]
 	row = result[1]
 	# ----- Extract list of models that match:
 	genlist = dyrdata[model]
-	# ----- Extract P and Q from sysdata:
-	genlen = len(genpdata)
-	for ii in range(genlen):
-		if int(genlist.iloc[row,0]) == int(genpdata.iloc[ii,0]):
-			if int(genlist.iloc[row,1]) == int(genpdata.iloc[ii,8]):
-				Mb = float(genpdata.iloc[ii,9])*1000000
-				P0 = float(genpdata.iloc[ii,2])*1000000
-				Q0 = float(genpdata.iloc[ii,4])*1000000
-	# ----- Extract Mb, V and A from sysdata:
-	buslen = len(genbdata)
-	for ii in range(buslen):
-		if int(genlist.iloc[row,0]) == int(genbdata.iloc[ii,0]):
-			v0 = float(genbdata.iloc[ii,4])
-			a0 = float(genbdata.iloc[ii,5])
+	# ----- Extract Mb:
+	Mb = float(genpdata.iloc[index,9])*1000000
 	# ----- Writing Parameters for models:
+	file.write("  //Writing machine:\n")
 	if model == 'GENCLS':
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENCLS machine(\n")
 		file.write("   H = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   D = %.4f,\n" % float(genlist.iloc[row,3]))
 		file.write("   M_b = %.2f,\n" % Mb)
-		file.write("   P_0 = %.2f,\n" % P0)
-		file.write("   Q_0 = %.2f,\n" % Q0)
-		file.write("   v_0 = %.6f,\n" % v0)
-		file.write("   angle_0 = %.6f,\n" % a0)
+		file.write("   V_b = V_b,\n")
+		file.write("   P_0 = P_0,\n")
+		file.write("   Q_0 = Q_0,\n")
+		file.write("   v_0 = v_0,\n")
+		file.write("   angle_0 = angle_0,\n")
 		file.write("   omega(fixed = true));\n")
+	elif model == 'GENSAL':
+		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENSAL machine(\n")
+		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
+		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
+		file.write("   Tppq0 = %.4f,\n" % float(genlist.iloc[row,4]))
+		file.write("   H = %.4f,\n" % float(genlist.iloc[row,5]))
+		file.write("   D = %.4f,\n" % float(genlist.iloc[row,6]))
+		file.write("   Xd = %.4f,\n" % float(genlist.iloc[row,7]))
+		file.write("   Xq = %.4f,\n" % float(genlist.iloc[row,8]))
+		file.write("   Xpd = %.4f,\n" % float(genlist.iloc[row,9]))
+		file.write("   Xppd = %.4f,\n" % float(genlist.iloc[row,10]))
+		file.write("   Xl = %.4f,\n" % float(genlist.iloc[row,11]))
+		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,12]))
+		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,13]))
+		file.write("   Xppq = Xppd,\n")
+		file.write("   Ra = 0,\n")
+		file.write("   M_b = %.2f,\n" % Mb)
+		file.write("   V_b = V_b,\n")
+		file.write("   P_0 = P_0,\n")
+		file.write("   Q_0 = Q_0,\n")
+		file.write("   v_0 = v_0,\n")
+		file.write("   angle_0 = angle_0);\n")
+	elif model == 'GENSAE':
+		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENSAE machine(\n")
+		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
+		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
+		file.write("   Tppq0 = %.4f,\n" % float(genlist.iloc[row,4]))
+		file.write("   H = %.4f,\n" % float(genlist.iloc[row,5]))
+		file.write("   D = %.4f,\n" % float(genlist.iloc[row,6]))
+		file.write("   Xd = %.4f,\n" % float(genlist.iloc[row,7]))
+		file.write("   Xq = %.4f,\n" % float(genlist.iloc[row,8]))
+		file.write("   Xpd = %.4f,\n" % float(genlist.iloc[row,9]))
+		file.write("   Xppd = %.4f,\n" % float(genlist.iloc[row,10]))
+		file.write("   Xl = %.4f,\n" % float(genlist.iloc[row,11]))
+		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,12]))
+		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,13]))
+		file.write("   Xppq = Xppd,\n")
+		file.write("   Ra = 0,\n")
+		file.write("   M_b = %.2f,\n" % Mb)
+		file.write("   V_b = V_b,\n")
+		file.write("   P_0 = P_0,\n")
+		file.write("   Q_0 = Q_0,\n")
+		file.write("   v_0 = v_0,\n")
+		file.write("   angle_0 = angle_0);\n")
+	elif model == 'GENROU':
+		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENROU machine(\n")
+		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
+		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
+		file.write("   Tpq0 = %.4f,\n" % float(genlist.iloc[row,4]))
+		file.write("   Tppq0 = %.4f,\n" % float(genlist.iloc[row,5]))
+		file.write("   H = %.4f,\n" % float(genlist.iloc[row,6]))
+		file.write("   D = %.4f,\n" % float(genlist.iloc[row,7]))
+		file.write("   Xd = %.4f,\n" % float(genlist.iloc[row,8]))
+		file.write("   Xq = %.4f,\n" % float(genlist.iloc[row,9]))
+		file.write("   Xpd = %.4f,\n" % float(genlist.iloc[row,10]))
+		file.write("   Xpq = %.4f,\n" % float(genlist.iloc[row,11]))
+		file.write("   Xppd = %.4f,\n" % float(genlist.iloc[row,12]))
+		file.write("   Xl = %.4f,\n" % float(genlist.iloc[row,13]))
+		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,14]))
+		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,15]))
+		file.write("   Xppq = Xppd,\n")
+		file.write("   Ra = 0,\n")
+		file.write("   M_b = %.2f,\n" % Mb)
+		file.write("   V_b = V_b,\n")
+		file.write("   P_0 = P_0,\n")
+		file.write("   Q_0 = Q_0,\n")
+		file.write("   v_0 = v_0,\n")
+		file.write("   angle_0 = angle_0);\n")
+	elif model == 'GENROE':
+		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENROE machine(\n")
+		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
+		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
+		file.write("   Tpq0 = %.4f,\n" % float(genlist.iloc[row,4]))
+		file.write("   Tppq0 = %.4f,\n" % float(genlist.iloc[row,5]))
+		file.write("   H = %.4f,\n" % float(genlist.iloc[row,6]))
+		file.write("   D = %.4f,\n" % float(genlist.iloc[row,7]))
+		file.write("   Xd = %.4f,\n" % float(genlist.iloc[row,8]))
+		file.write("   Xq = %.4f,\n" % float(genlist.iloc[row,9]))
+		file.write("   Xpd = %.4f,\n" % float(genlist.iloc[row,10]))
+		file.write("   Xpq = %.4f,\n" % float(genlist.iloc[row,11]))
+		file.write("   Xppd = %.4f,\n" % float(genlist.iloc[row,12]))
+		file.write("   Xl = %.4f,\n" % float(genlist.iloc[row,13]))
+		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,14]))
+		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,15]))
+		file.write("   Xppq = Xppd,\n")
+		file.write("   Ra = 0,\n")
+		file.write("   M_b = %.2f,\n" % Mb)
+		file.write("   V_b = V_b,\n")
+		file.write("   P_0 = P_0,\n")
+		file.write("   Q_0 = Q_0,\n")
+		file.write("   v_0 = v_0,\n")
+		file.write("   angle_0 = angle_0);\n")
 #=========================================================================================      
 # Function: writeExc
 # Authors: marcelofcastro        
 # Description: It writes exciter model.
 #=========================================================================================
-
-
+def writeExc(dyrdata,result,file):
+	# ----- Extract results:
+	model = result[0]
+	row = result[1]
+	# ----- Test if we have exciter:
+	if model == 'None':
+		file.write("  //No exciter\n")
+	else:
+		file.write("  //Writing exciter:\n")
 #=========================================================================================      
 # Function: connectExc
 # Authors: marcelofcastro        
 # Description: It connects exciters to machines.
 #=========================================================================================
-
-
+def connectExc(dyrdata,result,file):
+	# ----- Extract results:
+	model = result[0]
+	row = result[1]
+	# ----- Test if we have exciter:
+	if model == 'None':
+		file.write("  connect(machine.EFD,machine.EFD0);\n")
 #=========================================================================================      
 # Function: writeGov
 # Authors: marcelofcastro        
 # Description: It writes turbine-governor model.
 #=========================================================================================
-
-
+def writeGov(dyrdata,result,file):
+	# ----- Extract results:
+	model = result[0]
+	row = result[1]
+	# ----- Test if we have governor:
+	if model == 'None':
+		file.write("  //No turbine-governor\n")
+	else:
+		file.write("  //Writing turbine-governor:\n")
 #=========================================================================================      
 # Function: connectGov
 # Authors: marcelofcastro        
 # Description: It connects exciters to machines.
 #=========================================================================================
-
-
+def connectGov(dyrdata,result,file):
+	# ----- Extract results:
+	model = result[0]
+	row = result[1]
+	# ----- Test if we have exciter:
+	if model == 'None':
+		file.write("  connect(machine.PMECH,machine.PMECH0);\n")
 #=========================================================================================      
 # Function: writeGenMo
 # Authors: marcelofcastro        
@@ -319,7 +425,6 @@ def writeMac(genpdata,genbdata,dyrdata,result,file):
 def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 	# ----- Extracting information from system
 	gens = sysdata['gen'] # getting generator data
-	buses = sysdata['bus'] # getting bus data
 	ngens = len(gens) # getting number of generators
 	# ----- Changing directory to system data directory:
 	os.chdir(gdir)
@@ -343,11 +448,20 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 		genmo.write("  extends OpenIPSL.Electrical.Essentials.pfComponent;\n")
 		genmo.write("  OpenIPSL.Interfaces.PwPin pin;\n")
 		# Declaring machines:
-		result = lookFor('machines',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
-		writeMac(gens,buses,dyrdata,result,genmo)
+		macresult = lookFor('machine',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
+		writeMac(gens,ii,dyrdata,macresult,genmo)
+		# Declaring exciters:
+		excresult = lookFor('exciter',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
+		writeExc(dyrdata,excresult,genmo)
+		# Declaring exciters:
+		govresult = lookFor('governor',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
+		writeGov(dyrdata,govresult,genmo)
 		# Starting connection:
 		genmo.write("equation\n")
-		genmo.write("  connect(machine.p,pin.p)\n")
+		genmo.write("  connect(machine.p,pin.p)\n") # connecting machine to pin
+		if macresult[0] != 'GENCLS':
+			connectExc(dyrdata,excresult,genmo) # connecting exciter to machine
+			connectGov(dyrdata,govresult,genmo) # connecting turbine-governor to machine
 		genmo.write("end %s;" % genname)
 #=========================================================================================      
 # Function: writeMo
