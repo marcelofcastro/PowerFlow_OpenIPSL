@@ -42,11 +42,9 @@ def frompsse():
     [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile) # parse rawfile for sysdata
     dyrfile = directory_functions.askDyrfile() # ask the user which dyr file will be translated
     dyrdata = psse2mo.readDyr(dyrfile)
-    psse2mo.formatDyr(dyrdata,sysdata)
-    
-    #userpath = directory_functions.askDir() # get directory where user wants files to be placed
-    #[wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath) # creates folders for placement of results   
-    #psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata)
+    userpath = directory_functions.askDir() # get directory where user wants files to be placed
+    [wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath) # creates folders for placement of results   
+    psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata) # writes models
 #==================================================================================
 # Code Part: Graphical User Interface   
 # Author: marcelofcastro          

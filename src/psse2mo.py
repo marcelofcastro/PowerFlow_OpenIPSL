@@ -32,7 +32,7 @@ def getRawBase(rawfile):
 	psse_version = float(FirstLine[2]) # finding psse version in first line
 	system_frequency = float(FirstLine[5]) # finding system_frequency in first line
 	# ----- Message for confirming data is correct:
-	message = " PSS(R)E version: %.0f.\n System power base: %.2f MVA.\n System frequency: %.2f Hz." % (psse_version,system_base,system_frequency)
+	message = " PSS(R)E version: %.0f.\n System power base: %.1f MVA.\n System frequency: %.0f Hz." % (psse_version,system_base,system_frequency)
 	tkMessageBox.showinfo("PSSE File Parsed", message) # displays psse version, base power and system frequency
 	return [system_base,system_frequency]
 #=========================================================================================      
@@ -64,50 +64,15 @@ def readDyr(dyrfile):
 	dyrdata=parse_dyr(dyrfile)
 	return dyrdata
 #=========================================================================================      
-# Function: Dyr
+# Function: lookFor
 # Authors: marcelofcastro          
-# Description: It organizes the information from dyr file to facilitate model writing.
+# Description: It finds models connected to a particular bus and circuit.
 #=========================================================================================
-def formatDyr(dyrdata,sysdata):
-	# ----- Getting gens (IT WILL BE REMOVED LATER):
-	gendata = sysdata['gen']
+def lookFor(modeltype,bus,circuit,dyrdata):	
 	# ----- Lists of models:
 	macmodels = ['GENCLS','GENSAL','GENSAE','GENROU','GENROE','CSVGN1']
 	excmodels = ['EXDC2','IEEEX1','SEXS','EXST1','ESDC2A']
-	govmodels = ['TGOV1','IEEEG1']
-	pssmodels = ['IEEEST']
-	# ----- Looking for systems:
-	for ii in range(len(gendata)):
-		busnumber = gendata.iloc[ii,0]
-		for mac in macmodels:
-			try:
-				macinstances = dyrdata[str(mac)]
-
-	# genname = str(genmodels[1])
-	# gen = dyrdata[genname]
-	# print(gen.iloc[0,0])
-	# print(gen)
-	#busdata = sysdata['bus']
-	#bn = int(busdata.iloc[0])
-	print(sysdata['gen'])
-	# for gen in genmodels:
-	# 	try:
-	# 		gens = dyrdata[str(gen)]
-	# 		print(gens.iloc[0,0])
-	# 	except:
-	# 		continue
-		#gentest = dyrdata[gen]
-		#print(gentest[0])
-#=========================================================================================      
-# Function: loofFor
-# Authors: marcelofcastro          
-# Description: It finds models connected to a particular bus.
-#=========================================================================================
-def lookFor(modeltype,dyrdata,bus,circuit):	
-	# ----- Lists of models:
-	macmodels = ['GENCLS','GENSAL','GENSAE','GENROU','GENROE','CSVGN1']
-	excmodels = ['EXDC2','IEEEX1','SEXS','EXST1','ESDC2A']
-	govmodels = ['TGOV1','IEEEG1']
+	govmodels = ['TGOV1','IEEEG1','HYGOV','GGOV1']
 	pssmodels = ['IEEEST']
 	# ----- Determining which list will be used:
 	if modeltype == 'machines':
@@ -119,20 +84,40 @@ def lookFor(modeltype,dyrdata,bus,circuit):
 	elif modeltype == 'stabilizer':
 		models = pssmodels
 	# ----- Searching for model:
-
+	mdldata = 'None'
+	index = 0
+	flag = False
+	#for mdl in models:
+	for i in range(len(models)):
+		mdl = models[i]
+		try:
+			mdlinst = dyrdata[mdl]
+			flag = True
+			if flag == True:
+				buses = mdlinst[0]
+				circuits = mdlinst[1]
+				for ii in range(len(mdlinst)):
+					if buses[ii] == int(bus):
+						if circuits[ii] == int(circuit):
+							mdldata = mdl
+							index = ii
+				flag = False
+		except:
+			continue
+	return [mdldata,index] 
 #=========================================================================================      
 # Function: writeSysMo
 # Authors: marcelofcastro        
-# Description: It writes the files needed for system package.
+# Description: It writes the files needed for system package and the network file.
 #=========================================================================================
 def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base):
 	# ----- Extracting information from system
 	buses = sysdata['bus'] # getting bus data 
 	gens = sysdata['gen'] # getting generator data
 	lines = sysdata['branch'] # getting transmission line data
-	transf = sysdata['transformer'] # getting transformer data
+	#transf = sysdata['transformer'] # getting transformer data
 	loads = sysdata['load'] # getting load data
-	shunts = sysdata['fixedshunt'] # getting shunt data
+	#shunts = sysdata['fixedshunt'] # getting shunt data
 	# ----- Changing directory to system directory
 	os.chdir(sdir)
 	# ----- Creating system package .mo file:
@@ -163,20 +148,20 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	system_file.write("// Lines:\n")
 	for ii in range(len(lines)):
 		system_file.write("  OpenIPSL.Electrical.Branches.PwLine line%d (R = %.4f, X = %.4f, G = 0.0, B = %.4f); \n" % ((ii+1),float(lines.iloc[ii,3]),float(lines.iloc[ii,2]),float(lines.iloc[ii,4]/2)))
-	# LISTING TRANSFORMERS in the modelica file:
-	system_file.write("// Transformers:\n")
-	for ii in range(len(transf)):
-		system_file.write("  OpenIPSL.Electrical.Branches.PSSE.TwoWindingTransformer twTransformer%d (R = %.4f, X = %.4f, G = 0.0, B = 0.0, t1 = %.6f, t2 = %.6f ); \n" % ((ii+1),float(transf.iloc[ii,2]),float(transf.iloc[ii,3]),float(transf.iloc[ii,12]),float(transf.iloc[ii,13])))
+	# # LISTING TRANSFORMERS in the modelica file:
+	# system_file.write("// Transformers:\n")
+	# for ii in range(len(transf)):
+	# 	system_file.write("  OpenIPSL.Electrical.Branches.PSSE.TwoWindingTransformer twTransformer%d (R = %.4f, X = %.4f, G = 0.0, B = 0.0, t1 = %.6f, t2 = %.6f ); \n" % ((ii+1),float(transf.iloc[ii,2]),float(transf.iloc[ii,3]),float(transf.iloc[ii,12]),float(transf.iloc[ii,13])))
 	# LISTING LOADS in modelica file:
 	system_file.write("// Loads:\n")
 	for ii in range(len(loads)):
 		bn = int(loads.iloc[ii,0])
 		system_file.write("  OpenIPSL.Electrical.Loads.PSSE.Load load%d_bus%d (V_b = pfdata.voltages.BaseVoltage%d, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d, P_0 = %.4f, Q_0 = %.4f); \n" % ((ii+1),bn,bn,bn,bn,float(loads.iloc[ii,1]),float(loads.iloc[ii,2])))
-	# LISTING SHUNT in modelica file:
-	system_file.write("// Shunts:\n")
-	for ii in range(len(shunts)):
-		bn = int(loads.iloc[ii,0])
-		system_file.write("  OpenIPSL.Electrical.Banks.PSSE.Shunt bank%d_bus%d (G = 0.0, B = %.4f); \n" % ((ii+1),int(shunts.iloc[ii,0]),float(shunts.iloc[ii,1])))
+	# # LISTING SHUNT in modelica file:
+	# system_file.write("// Shunts:\n")
+	# for ii in range(len(shunts)):
+	# 	bn = int(loads.iloc[ii,0])
+	# 	system_file.write("  OpenIPSL.Electrical.Banks.PSSE.Shunt bank%d_bus%d (G = 0.0, B = %.4f); \n" % ((ii+1),int(shunts.iloc[ii,0]),float(shunts.iloc[ii,1])))
 	# LISTING GENERATION UNITS in modelica file:
 	system_file.write("// Generator Units:\n")
 	for ii in range(len(gens)):
@@ -189,19 +174,19 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	for ii in range(len(lines)):
 		system_file.write("  connect(bus_%d.p,line%d.p); \n" % (int(lines.iloc[ii,0]),(ii+1)))
 		system_file.write("  connect(line%d.n,bus_%d.p); \n" % ((ii+1),int(lines.iloc[ii,1])))
-	# Starting CONNECTION OF TRANSFORMERS:
-	system_file.write("// Connecting transformers:\n")
-	for ii in range(len(transf)):
-		system_file.write("  connect(bus_%d.p,twTransformer%d.p); \n" % (int(transf.iloc[ii,0]),(ii+1)))
-		system_file.write("  connect(twTransformer%d.n,bus_%d.p); \n" % ((ii+1),int(transf.iloc[ii,1]))) 
+	# # Starting CONNECTION OF TRANSFORMERS:
+	# system_file.write("// Connecting transformers:\n")
+	# for ii in range(len(transf)):
+	# 	system_file.write("  connect(bus_%d.p,twTransformer%d.p); \n" % (int(transf.iloc[ii,0]),(ii+1)))
+	# 	system_file.write("  connect(twTransformer%d.n,bus_%d.p); \n" % ((ii+1),int(transf.iloc[ii,1]))) 
 	# Starting CONNECTION OF LOADS:
 	system_file.write("// Connecting loads:\n")
 	for ii in range(len(loads)):
 		system_file.write("  connect(load%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(loads.iloc[ii,0]),int(loads.iloc[ii,0])))
-	# Starting CONNECTION OF BANKS:
-	system_file.write("// Connecting banks:\n")
-	for ii in range(len(shunts)):
-		system_file.write("  connect(bank%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(shunts.iloc[ii,0]),int(shunts.iloc[ii,0])))
+	# # Starting CONNECTION OF BANKS:
+	# system_file.write("// Connecting banks:\n")
+	# for ii in range(len(shunts)):
+	# 	system_file.write("  connect(bank%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(shunts.iloc[ii,0]),int(shunts.iloc[ii,0])))
 	# Starting CONNECTION OF GENERATION UNITS:
 	system_file.write("// Connecting generation units:\n")
 	for ii in range(len(gens)):
@@ -263,13 +248,78 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 		pdatamo.write("  parameter Real Q%d_%d = %.0f;\n" % ((ii+1),int(gens.iloc[ii,0]), float(gens.iloc[ii,4])*1000000)) # I need to change the unit here to what's used in OpenIPSL
 	pdatamo.write("end power_data;")
 #=========================================================================================      
+# Function: writeMac
+# Authors: marcelofcastro        
+# Description: It writes machine model.
+#=========================================================================================
+def writeMac(genpdata,genbdata,dyrdata,result,file):
+	# ----- Extract results:
+	model = result[0]
+	row = result[1]
+	# ----- Extract list of models that match:
+	genlist = dyrdata[model]
+	# ----- Extract P and Q from sysdata:
+	genlen = len(genpdata)
+	for ii in range(genlen):
+		if int(genlist.iloc[row,0]) == int(genpdata.iloc[ii,0]):
+			if int(genlist.iloc[row,1]) == int(genpdata.iloc[ii,8]):
+				Mb = float(genpdata.iloc[ii,9])*1000000
+				P0 = float(genpdata.iloc[ii,2])*1000000
+				Q0 = float(genpdata.iloc[ii,4])*1000000
+	# ----- Extract Mb, V and A from sysdata:
+	buslen = len(genbdata)
+	for ii in range(buslen):
+		if int(genlist.iloc[row,0]) == int(genbdata.iloc[ii,0]):
+			v0 = float(genbdata.iloc[ii,4])
+			a0 = float(genbdata.iloc[ii,5])
+	# ----- Writing Parameters for models:
+	if model == 'GENCLS':
+		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENCLS machine(\n")
+		file.write("   H = %.4f,\n" % float(genlist.iloc[row,2]))
+		file.write("   D = %.4f,\n" % float(genlist.iloc[row,3]))
+		file.write("   M_b = %.2f,\n" % Mb)
+		file.write("   P_0 = %.2f,\n" % P0)
+		file.write("   Q_0 = %.2f,\n" % Q0)
+		file.write("   v_0 = %.6f,\n" % v0)
+		file.write("   angle_0 = %.6f,\n" % a0)
+		file.write("   omega(fixed = true));\n")
+#=========================================================================================      
+# Function: writeExc
+# Authors: marcelofcastro        
+# Description: It writes exciter model.
+#=========================================================================================
+
+
+#=========================================================================================      
+# Function: connectExc
+# Authors: marcelofcastro        
+# Description: It connects exciters to machines.
+#=========================================================================================
+
+
+#=========================================================================================      
+# Function: writeGov
+# Authors: marcelofcastro        
+# Description: It writes turbine-governor model.
+#=========================================================================================
+
+
+#=========================================================================================      
+# Function: connectGov
+# Authors: marcelofcastro        
+# Description: It connects exciters to machines.
+#=========================================================================================
+
+
+#=========================================================================================      
 # Function: writeGenMo
 # Authors: marcelofcastro        
-# Description: It writes the network package.
+# Description: It writes the generators package.
 #=========================================================================================
-def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata):
+def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 	# ----- Extracting information from system
 	gens = sysdata['gen'] # getting generator data
+	buses = sysdata['bus'] # getting bus data
 	ngens = len(gens) # getting number of generators
 	# ----- Changing directory to system data directory:
 	os.chdir(gdir)
@@ -291,14 +341,20 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata):
 		genmo.write("within System.Machines\n")
 		genmo.write("model %s\n" % genname)
 		genmo.write("  extends OpenIPSL.Electrical.Essentials.pfComponent;\n")
-		genmo.write("  OpenIPSL.Interfaces.PwPin p;\n")
+		genmo.write("  OpenIPSL.Interfaces.PwPin pin;\n")
+		# Declaring machines:
+		result = lookFor('machines',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
+		writeMac(gens,buses,dyrdata,result,genmo)
+		# Starting connection:
+		genmo.write("equation\n")
+		genmo.write("  connect(machine.p,pin.p)\n")
 		genmo.write("end %s;" % genname)
 #=========================================================================================      
 # Function: writeMo
 # Authors: marcelofcastro       
 # Description: It uses the data from readRaw and readDyr to build the system in Modelica.
 #=========================================================================================
-def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata):
+def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata):
 	# ----- Initializing file name:
 	networkname = "power_grid"
 	pkg_name = "package.mo"
@@ -308,7 +364,7 @@ def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata):
 	# ----- Writing System Data Package:
 	writeDataMo(ddir,pkg_name,pkg_ordr,sysdata)
 	# ----- Writing Generator Data:
-	writeGenMo(gdir,pkg_name,pkg_ordr,sysdata)
+	writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata)
 
 
 
