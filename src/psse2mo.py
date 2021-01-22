@@ -115,9 +115,12 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	buses = sysdata['bus'] # getting bus data 
 	gens = sysdata['gen'] # getting generator data
 	lines = sysdata['branch'] # getting transmission line data
-	#transf = sysdata['transformer'] # getting transformer data
+	transf = sysdata['transformer'] # getting transformer data
 	loads = sysdata['load'] # getting load data
-	#shunts = sysdata['fixedshunt'] # getting shunt data
+	try:
+		shunts = sysdata['fixedshunt'] # getting shunt data
+	except:
+		shunts = []
 	# ----- Changing directory to system directory
 	os.chdir(sdir)
 	# ----- Creating system package .mo file:
@@ -140,57 +143,90 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0f, fn = %.2f) annotation (Placement(transformation(extent={{-94,80},{-60,100}})));\n" % (float(system_base)*1000000,float(system_frequency)))
 	system_file.write("  System.Data.pfdata pfdata  annotation (Placement(transformation(extent={{-88,60},{-68,80}})));\n")
 	# LISTING BUSES in the modelica file:
-	system_file.write("// Buses:\n")
-	for ii in range(len(buses)):
-		bn = int(buses.iloc[ii,0])
-		system_file.write("  OpenIPSL.Electrical.Buses.Bus bus_%d (V_b = pfdata.voltages.BaseVoltage%d, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d); \n" % (bn,bn,bn,bn))
+	system_file.write("// -- Buses:\n")
+	if len(buses) != 0:
+		for ii in range(len(buses)):
+			bn = int(buses.iloc[ii,0])
+			system_file.write("  OpenIPSL.Electrical.Buses.Bus bus_%d (V_b = pfdata.voltages.BaseVoltage%d, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d); \n" % (bn,bn,bn,bn))
+	else:
+		system_file.write("// system has no bus\n")
 	# LISTING BRANCHES in the modelica file:
-	system_file.write("// Lines:\n")
-	for ii in range(len(lines)):
-		system_file.write("  OpenIPSL.Electrical.Branches.PwLine line%d (R = %.4f, X = %.4f, G = 0.0, B = %.4f); \n" % ((ii+1),float(lines.iloc[ii,3]),float(lines.iloc[ii,2]),float(lines.iloc[ii,4]/2)))
-	# # LISTING TRANSFORMERS in the modelica file:
-	# system_file.write("// Transformers:\n")
-	# for ii in range(len(transf)):
-	# 	system_file.write("  OpenIPSL.Electrical.Branches.PSSE.TwoWindingTransformer twTransformer%d (R = %.4f, X = %.4f, G = 0.0, B = 0.0, t1 = %.6f, t2 = %.6f ); \n" % ((ii+1),float(transf.iloc[ii,2]),float(transf.iloc[ii,3]),float(transf.iloc[ii,12]),float(transf.iloc[ii,13])))
+	system_file.write("// -- Lines:\n")
+	if len(lines) != 0:
+		for ii in range(len(lines)):
+			system_file.write("  OpenIPSL.Electrical.Branches.PwLine line%d (R = %.4f, X = %.4f, G = 0.0, B = %.4f); \n" % ((ii+1),float(lines.iloc[ii,3]),float(lines.iloc[ii,2]),float(lines.iloc[ii,4]/2)))
+	else:
+		system_file.write("// system has no line\n")
+	# LISTING TRANSFORMERS in the modelica file:
+	system_file.write("// -- Transformers:\n")
+	if len(transf) != 0:
+		for ii in range(len(transf)):
+			system_file.write("  OpenIPSL.Electrical.Branches.PSSE.TwoWindingTransformer twTransformer%d (R = %.4f, X = %.4f, G = 0.0, B = 0.0, t1 = %.6f, t2 = %.6f ); \n" % ((ii+1),float(transf.iloc[ii,2]),float(transf.iloc[ii,3]),float(transf.iloc[ii,12]),float(transf.iloc[ii,13])))
+	else:
+		system_file.write("// system has no transformer\n")
 	# LISTING LOADS in modelica file:
-	system_file.write("// Loads:\n")
-	for ii in range(len(loads)):
-		bn = int(loads.iloc[ii,0])
-		system_file.write("  OpenIPSL.Electrical.Loads.PSSE.Load load%d_bus%d (V_b = pfdata.voltages.BaseVoltage%d, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d, P_0 = %.4f, Q_0 = %.4f); \n" % ((ii+1),bn,bn,bn,bn,float(loads.iloc[ii,1]),float(loads.iloc[ii,2])))
-	# # LISTING SHUNT in modelica file:
-	# system_file.write("// Shunts:\n")
-	# for ii in range(len(shunts)):
-	# 	bn = int(loads.iloc[ii,0])
-	# 	system_file.write("  OpenIPSL.Electrical.Banks.PSSE.Shunt bank%d_bus%d (G = 0.0, B = %.4f); \n" % ((ii+1),int(shunts.iloc[ii,0]),float(shunts.iloc[ii,1])))
+	system_file.write("// -- Loads:\n")
+	if len(loads) != 0:
+		for ii in range(len(loads)):
+			bn = int(loads.iloc[ii,0])
+			system_file.write("  OpenIPSL.Electrical.Loads.PSSE.Load load%d_bus%d (V_b = pfdata.voltages.BaseVoltage%d, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d, P_0 = %.4f, Q_0 = %.4f); \n" % ((ii+1),bn,bn,bn,bn,float(loads.iloc[ii,1]),float(loads.iloc[ii,2])))
+	else:
+		system_file.write("// system has no load\n")
+	# LISTING SHUNT in modelica file:
+	system_file.write("// -- Shunts:\n")
+	if len(shunts) != 0:
+		for ii in range(len(shunts)):
+			bn = int(loads.iloc[ii,0])
+			system_file.write("  OpenIPSL.Electrical.Banks.PSSE.Shunt bank%d_bus%d (G = 0.0, B = %.4f); \n" % ((ii+1),int(shunts.iloc[ii,0]),float(shunts.iloc[ii,1])))
+	else:
+		system_file.write("// system has no shunt bank\n")
 	# LISTING GENERATION UNITS in modelica file:
-	system_file.write("// Generator Units:\n")
-	for ii in range(len(gens)):
-		bn = gens.iloc[ii,0]
-		system_file.write("  System.Generators.Gen%d_%d gen%d_%d (V_b = pfdata.voltages.BaseVoltage%d, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d, P_0 = pfdata.powers.P%d_%d, Q_0 = pfdata.powers.Q%d_%d); \n" % ((ii+1),bn,(ii+1),bn,bn,bn,bn,(ii+1),bn,(ii+1),bn))
+	system_file.write("// -- Generator Units:\n")
+	if len(gens) != 0:
+		for ii in range(len(gens)):
+			bn = gens.iloc[ii,0]
+			system_file.write("  System.Generators.Gen%d_%d gen%d_%d (V_b = pfdata.voltages.BaseVoltage%d, v_0 = pfdata.voltages.V%d, angle_0 = pfdata.voltages.A%d, P_0 = pfdata.powers.P%d_%d, Q_0 = pfdata.powers.Q%d_%d); \n" % ((ii+1),bn,(ii+1),bn,bn,bn,bn,(ii+1),bn,(ii+1),bn))
+	else:
+		system_file.write("// system has no generator\n")
 	# Starting EQUATION section (connections):
 	system_file.write("equation\n")
 	# Starting CONNECTION OF BRANCHES:
-	system_file.write("// Connecting branches:\n")
-	for ii in range(len(lines)):
-		system_file.write("  connect(bus_%d.p,line%d.p); \n" % (int(lines.iloc[ii,0]),(ii+1)))
-		system_file.write("  connect(line%d.n,bus_%d.p); \n" % ((ii+1),int(lines.iloc[ii,1])))
-	# # Starting CONNECTION OF TRANSFORMERS:
-	# system_file.write("// Connecting transformers:\n")
-	# for ii in range(len(transf)):
-	# 	system_file.write("  connect(bus_%d.p,twTransformer%d.p); \n" % (int(transf.iloc[ii,0]),(ii+1)))
-	# 	system_file.write("  connect(twTransformer%d.n,bus_%d.p); \n" % ((ii+1),int(transf.iloc[ii,1]))) 
+	if len(lines) != 0:
+		system_file.write("// -- Connecting branches:\n")
+		for ii in range(len(lines)):
+			system_file.write("  connect(bus_%d.p,line%d.p); \n" % (int(lines.iloc[ii,0]),(ii+1)))
+			system_file.write("  connect(line%d.n,bus_%d.p); \n" % ((ii+1),int(lines.iloc[ii,1])))
+	else:
+		system_file.write("// No branch to connect.\n")
+	# Starting CONNECTION OF TRANSFORMERS:
+	if len(transf) != 0:
+		system_file.write("// -- Connecting transformers:\n")
+		for ii in range(len(transf)):
+			system_file.write("  connect(bus_%d.p,twTransformer%d.p); \n" % (int(transf.iloc[ii,0]),(ii+1)))
+			system_file.write("  connect(twTransformer%d.n,bus_%d.p); \n" % ((ii+1),int(transf.iloc[ii,1])))
+	else:
+		system_file.write("// No transformer to connect.\n")
 	# Starting CONNECTION OF LOADS:
-	system_file.write("// Connecting loads:\n")
-	for ii in range(len(loads)):
-		system_file.write("  connect(load%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(loads.iloc[ii,0]),int(loads.iloc[ii,0])))
-	# # Starting CONNECTION OF BANKS:
-	# system_file.write("// Connecting banks:\n")
-	# for ii in range(len(shunts)):
-	# 	system_file.write("  connect(bank%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(shunts.iloc[ii,0]),int(shunts.iloc[ii,0])))
+	if len(loads) != 0:
+		system_file.write("// -- Connecting loads:\n")
+		for ii in range(len(loads)):
+			system_file.write("  connect(load%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(loads.iloc[ii,0]),int(loads.iloc[ii,0])))
+	else:
+		system_file.write("// No load to connect.\n")
+	# Starting CONNECTION OF BANKS:
+	if len(shunts) != 0:
+		system_file.write("// -- Connecting banks:\n")
+		for ii in range(len(shunts)):
+			system_file.write("  connect(bank%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(shunts.iloc[ii,0]),int(shunts.iloc[ii,0])))
+	else:
+		system_file.write("// No shunt bank to connect.\n")
 	# Starting CONNECTION OF GENERATION UNITS:
-	system_file.write("// Connecting generation units:\n")
-	for ii in range(len(gens)):
-		system_file.write("  connect(gen%d_%d.p,bus_%d.p); \n" % ((ii+1),int(gens.iloc[ii,0]),int(gens.iloc[ii,0])))
+	if len(gens) != 0:
+		system_file.write("// -- Connecting generation units:\n")
+		for ii in range(len(gens)):
+			system_file.write("  connect(gen%d_%d.p,bus_%d.p); \n" % ((ii+1),int(gens.iloc[ii,0]),int(gens.iloc[ii,0])))
+	else:
+		system_file.write("// No generator to connect.\n")
 	# Closing file modelica file:
 	system_file.write("end %s;" % (str(networkname)))
 	system_file.close()
