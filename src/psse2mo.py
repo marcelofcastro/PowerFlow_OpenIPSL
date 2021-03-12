@@ -823,9 +823,9 @@ def connectPss(dyrdata,result,file):
 #=========================================================================================      
 # Function: writeGov
 # Authors: marcelofcastro        
-# Description: It writes turbine-governor model.
+# Description: It writes turbine-governor models.
 #=========================================================================================
-def writeGov(dyrdata,result,file):
+def writeGov(genpdata,index,dyrdata,result,file):
 	# ----- Extract results:
 	model = result[0]
 	row = result[1]
@@ -938,8 +938,15 @@ def writeGov(dyrdata,result,file):
 		file.write("   D_turb = %.4f,\n" % float(tglist.iloc[row,12]))
 		file.write("   q_NL = %.4f)\n" % float(tglist.iloc[row,13]))
 	elif model == 'IEEEG1':
+		# Find P0 in per unit:
+		# ----- Extract Mb:
+		Mb = float(genpdata.iloc[index,9])
+		# ----- Extract P0:
+		P0 = float(genpdata.iloc[index,2])
+		# ----- Calculate P0 in per unit:
+		p0_pu = P0/Mb;
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.TG.IEEEG1 governor(\n")
-		file.write("   P0 = 0.4,\n") # need to update this part!
+		file.write("   P0 = %.6f,\n" % p0_pu)
 		file.write("   K = %.4f,\n" % float(tglist.iloc[row,2]))
 		file.write("   T_1 = %.4f,\n" % float(tglist.iloc[row,3]))
 		file.write("   T_2 = %.4f,\n" % float(tglist.iloc[row,4]))
@@ -1039,7 +1046,7 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 			writePss(dyrdata,pssresult,genmo)
 			# Declaring governors:
 			govresult = lookFor('governor',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
-			writeGov(dyrdata,govresult,genmo)
+			writeGov(gens,ii,dyrdata,govresult,genmo)
 		# Starting connection:
 		list_exc = ['ESST4B'] # list of exciters with an integrated voltage compensator
 		genmo.write("equation\n")
