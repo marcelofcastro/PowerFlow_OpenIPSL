@@ -15,7 +15,7 @@ except ImportError:
     import tkinter.filedialog as tkFileDialog
     import tkinter.messagebox as tkMessageBox
 # ----- Importing sys module:
-import sys, os
+import sys, os, time
 homedir= os.getcwd()
 # ----- Adding paths for new modules:
 srcdir = homedir+ "/src"
@@ -39,12 +39,21 @@ def debug():
     print(auxdir)
 def frompsse():
     rawfile = directory_functions.askRawfile() # ask the user which raw file will be translated
+    start_readraw = time.time() # initial time for raw.
     [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile) # parse rawfile for sysdata
+    time_readraw = time.time() - start_readraw # time for raw.
     dyrfile = directory_functions.askDyrfile() # ask the user which dyr file will be translated
+    start_readdyr = time.time() # initial time for dyr.
     dyrdata = psse2mo.readDyr(dyrfile)
+    time_readdyr = time.time() - start_readdyr # time for dyr.
     userpath = directory_functions.askDir() # get directory where user wants files to be placed
+    start_trans = time.time() # initial time.
     [wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath) # creates folders for placement of results   
     psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata) # writes models
+    time_trans = time.time()- start_trans # calculate execution time
+    total_time = time_trans + time_readraw + time_readdyr
+    message = " Execution time for reading RAW file: %.6f.\n Execution time for reading DYR file: %.6f.\n Execution time for translation of the system: %.6f.\n Total execution time: %.6f." % (time_readraw,time_readdyr,time_trans,total_time)
+    tkMessageBox.showinfo("Translation Terminated", message) # displays execution time
 #==================================================================================
 # Code Part: Graphical User Interface   
 # Author: marcelofcastro          
