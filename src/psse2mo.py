@@ -330,7 +330,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,12]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,13]))
 		file.write("   Xppq = Xppd,\n")
-		file.write("   Ra = 0,\n")
+		file.write("   R_a = 0,\n")
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
@@ -352,7 +352,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,12]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,13]))
 		file.write("   Xppq = Xppd,\n")
-		file.write("   Ra = 0,\n")
+		file.write("   R_a = 0,\n")
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
@@ -376,7 +376,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,14]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,15]))
 		file.write("   Xppq = Xppd,\n")
-		file.write("   Ra = 0,\n")
+		file.write("   R_a = 0,\n")
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
@@ -400,7 +400,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,14]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,15]))
 		file.write("   Xppq = Xppd,\n")
-		file.write("   Ra = 0,\n")
+		file.write("   R_a = 0,\n")
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
@@ -778,11 +778,11 @@ def connectExc(dyrdata,result,file):
 	# list 02: VT is an additional input
 	es_type_02 = ['ESDC2A','ESST1A']
 	# ----- Connect exciter:
-	file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(visible = true, points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));")
-	file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(visible = true, points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));")
-	file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(visible = true, points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));")
-	file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(visible = true, points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));")
-	file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(visible = true, points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));")
+	file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(visible = true, points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));\n")
+	file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(visible = true, points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
+	file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(visible = true, points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));\n")
+	file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(visible = true, points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));\n")
+	file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(visible = true, points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));\n")
 	# ----- Test if we have exciter:
 	if model not in es_type_01:
 		file.write("  connect(uel.y,exciter.VUEL) annotation(Line(points={{-19,-52},{-10,-52},{-10,-21}}, color={0,0,127}));\n")
@@ -804,9 +804,76 @@ def writePss(dyrdata,result,file):
 	# ----- Test if we have stabilizer:
 	if model == 'None':
 		file.write("  // No stabilizer, so disabled will be used\n")
-		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.DisabledPSS pss  annotation(Placement(transformation(extent = {{-70, -10}, {-50, 10}})));\n")
-	else:
-		file.write("  //Writing stabilizer:\n")
+		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.DisabledPSS pss\n")
+	elif model == 'IEEEST':
+		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.IEEEST pss(\n")
+		file.write("   A_1 = %.4f,\n" % float(stlist.iloc[row,4]))
+		file.write("   A_2 = %.4f,\n" % float(stlist.iloc[row,5]))
+		file.write("   A_3 = %.4f,\n" % float(stlist.iloc[row,6]))
+		file.write("   A_4 = %.4f,\n" % float(stlist.iloc[row,7]))
+		file.write("   A_5 = %.4f,\n" % float(stlist.iloc[row,8]))
+		file.write("   T_1 = %.4f,\n" % float(stlist.iloc[row,9]))
+		file.write("   T_2 = %.4f,\n" % float(stlist.iloc[row,10]))
+		file.write("   T_3 = %.4f,\n" % float(stlist.iloc[row,11]))
+		file.write("   T_4 = %.4f,\n" % float(stlist.iloc[row,12]))
+		file.write("   T_5 = %.4f,\n" % float(stlist.iloc[row,13]))
+		file.write("   T_6 = %.4f,\n" % float(stlist.iloc[row,14]))
+		file.write("   K_S = %.4f,\n" % float(stlist.iloc[row,15]))
+		file.write("   K_E = %.4f,\n" % float(stlist.iloc[row,16]))
+		file.write("   L_SMAX = %.4f,\n" % float(stlist.iloc[row,17]))
+		file.write("   L_SMIN = %.4f,\n" % float(stlist.iloc[row,18]))
+		file.write("   V_CU = %.4f,\n" % float(stlist.iloc[row,19]))
+		file.write("   V_CL = %.4f)\n" % float(stlist.iloc[row,20]))
+	elif model == 'PSS2A':
+		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.PSS2A pss(\n")
+		file.write("   M = %d,\n" % int(stlist.iloc[row,6]))
+		file.write("   N = %d,\n" % int(stlist.iloc[row,7]))
+		file.write("   T_w1 = %.4f,\n" % float(stlist.iloc[row,8]))
+		file.write("   T_w2 = %.4f,\n" % float(stlist.iloc[row,9]))
+		file.write("   T_6 = %.4f,\n" % float(stlist.iloc[row,10]))
+		file.write("   T_w3 = %.4f,\n" % float(stlist.iloc[row,11]))
+		file.write("   T_w4 = %.4f,\n" % float(stlist.iloc[row,12]))
+		file.write("   T_7 = %.4f,\n" % float(stlist.iloc[row,13]))
+		file.write("   K_S2 = %.4f,\n" % float(stlist.iloc[row,14]))
+		file.write("   K_S3 = %.4f,\n" % float(stlist.iloc[row,15]))
+		file.write("   T_8 = %.4f,\n" % float(stlist.iloc[row,16]))
+		file.write("   T_9 = %.4f,\n" % float(stlist.iloc[row,17]))
+		file.write("   K_S1 = %.4f,\n" % float(stlist.iloc[row,18]))
+		file.write("   T_1 = %.4f,\n" % float(stlist.iloc[row,19]))
+		file.write("   T_2 = %.4f,\n" % float(stlist.iloc[row,20]))
+		file.write("   T_3 = %.4f,\n" % float(stlist.iloc[row,17]))
+		file.write("   T_4 = %.4f,\n" % float(stlist.iloc[row,18]))
+		file.write("   V_STMAX = %.4f,\n" % float(stlist.iloc[row,19]))
+		file.write("   V_STMIN = %.4f)\n" % float(stlist.iloc[row,20]))
+	elif model == 'PSS2B':
+		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.PSS2B pss(\n")
+		file.write("   M = %d,\n" % int(stlist.iloc[row,6]))
+		file.write("   N = %d,\n" % int(stlist.iloc[row,7]))
+		file.write("   T_w1 = %.4f,\n" % float(stlist.iloc[row,8]))
+		file.write("   T_w2 = %.4f,\n" % float(stlist.iloc[row,9]))
+		file.write("   T_6 = %.4f,\n" % float(stlist.iloc[row,10]))
+		file.write("   T_w3 = %.4f,\n" % float(stlist.iloc[row,11]))
+		file.write("   T_w4 = %.4f,\n" % float(stlist.iloc[row,12]))
+		file.write("   T_7 = %.4f,\n" % float(stlist.iloc[row,13]))
+		file.write("   K_S2 = %.4f,\n" % float(stlist.iloc[row,14]))
+		file.write("   K_S3 = %.4f,\n" % float(stlist.iloc[row,15]))
+		file.write("   T_8 = %.4f,\n" % float(stlist.iloc[row,16]))
+		file.write("   T_9 = %.4f,\n" % float(stlist.iloc[row,17]))
+		file.write("   K_S1 = %.4f,\n" % float(stlist.iloc[row,18]))
+		file.write("   T_1 = %.4f,\n" % float(stlist.iloc[row,19]))
+		file.write("   T_2 = %.4f,\n" % float(stlist.iloc[row,20]))
+		file.write("   T_3 = %.4f,\n" % float(stlist.iloc[row,17]))
+		file.write("   T_4 = %.4f,\n" % float(stlist.iloc[row,18]))
+		file.write("   T_10 = %.4f,\n" % float(stlist.iloc[row,19]))
+		file.write("   T_11 = %.4f,\n" % float(stlist.iloc[row,20]))
+		file.write("   V_S1MAX = %.4f,\n" % float(stlist.iloc[row,19]))
+		file.write("   V_S1MIN = %.4f,\n" % float(stlist.iloc[row,20]))
+		file.write("   V_S2MAX = %.4f,\n" % float(stlist.iloc[row,21]))
+		file.write("   V_S2MIN = %.4f,\n" % float(stlist.iloc[row,22]))
+		file.write("   V_STMAX = %.4f,\n" % float(stlist.iloc[row,23]))
+		file.write("   V_STMIN = %.4f)\n" % float(stlist.iloc[row,24]))
+	# place pss:
+	file.write("  annotation(Placement(transformation(extent = {{-70, -10}, {-50, 10}})));\n")
 #=========================================================================================      
 # Function: connectPss
 # Authors: marcelofcastro        
@@ -818,8 +885,9 @@ def connectPss(dyrdata,result,file):
 	row = result[1]
 	# ----- List of Exciters by Group:
 	# ----- Test if we have exciter:
-	#if model == 'None':
-	#	file.write("  connect(machine.PMECH,machine.PMECH0);\n")
+	if model == 'None':
+		file.write("  connect(machine.PELEC, pss.V_S2) annotation (Line(points={{41,3},{54,3},{54,66},{-84,66},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+		file.write("  connect(machine.SPEED, pss.V_S1) annotation (Line(points={{41,7},{46,7},{46,50},{-76,50},{-76,4},{-71,4}}, color={0,0,127}));\n")
 #=========================================================================================      
 # Function: writeGov
 # Authors: marcelofcastro        
