@@ -70,8 +70,8 @@ def format_fixedshunt(df):
 	df.index = 'fshunt'+df['I'].astype(str) # this appears to be unique, if not, we have to add some ID that is not in PSSE Raw file
 
 	# it actually seems like B defined in RAW is in MVar and b in pypsa is Siemens, need to figure out different implementation
-	df = df.rename(index=str,columns={'I':'bus','B':'b','STATUS':'status'})
-	return df[['bus','b','status']]
+	df = df.rename(index=str,columns={'I':'bus','ID':'shunt_id','G':'g','B':'b','STATUS':'status'})
+	return df[['bus','shunt_id','g','b','status']]
 
 
 def format_transformer(df,s_system=100):

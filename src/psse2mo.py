@@ -93,7 +93,6 @@ def lookFor(modeltype,bus,circuit,dyrdata):
 	mdldata = 'None'
 	index = 0
 	flag = False
-	#for mdl in models:
 	for i in range(len(models)):
 		mdl = models[i]
 		try:
@@ -182,8 +181,11 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	system_file.write("// -- Shunts:\n")
 	if len(shunts) != 0:
 		for ii in range(len(shunts)):
-			bn = int(loads.iloc[ii,0])
-			system_file.write("  OpenIPSL.Electrical.Banks.PSSE.Shunt bank%d_bus%d (G = 0.0, B = %.4f); \n" % ((ii+1),int(shunts.iloc[ii,0]),float(shunts.iloc[ii,1])))
+			bn = int(shunts.iloc[ii,0]) # bus number
+			shunt_id = shunts.iloc[ii,1].strip("'") # equipment id
+			g_sh = float(shunts.iloc[ii,2])/float(system_base) # conductance
+			b_sh = float(shunts.iloc[ii,3])/float(system_base) # susceptance
+			system_file.write("  OpenIPSL.Electrical.Banks.PSSE.Shunt bank%s_%d (G = %.6f, B = %.6f); \n" % (shunt_id.strip(" "),bn,g_sh,b_sh))
 	else:
 		system_file.write("// system has no shunt bank\n")
 	# LISTING GENERATION UNITS in modelica file:
@@ -1103,6 +1105,7 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 		genmo.write("  extends OpenIPSL.Electrical.Essentials.pfComponent;\n")
 		genmo.write("  OpenIPSL.Interfaces.PwPin pin  annotation (Placement(transformation(extent={{100,-10},{120,10}})));\n")
 		# Declaring machines:
+		print(gens.iloc[ii,8])
 		macresult = lookFor('machine',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
 		writeMac(gens,ii,dyrdata,macresult,genmo)
 		if macresult[0] != 'GENCLS':

@@ -40,7 +40,7 @@ def debug():
 def frompsse():
     rawfile = directory_functions.askRawfile() # ask the user which raw file will be translated
     start_readraw = time.time() # initial time for raw.
-    [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile) # parse rawfile for sysdata
+    [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile) # parse and format rawfile for sysdata
     time_readraw = time.time() - start_readraw # time for raw.
     dyrfile = directory_functions.askDyrfile() # ask the user which dyr file will be translated
     start_readdyr = time.time() # initial time for dyr.
