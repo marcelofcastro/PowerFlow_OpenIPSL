@@ -103,7 +103,7 @@ def lookFor(modeltype,bus,circuit,dyrdata):
 				circuits = mdlinst[1]
 				for ii in range(len(mdlinst)):
 					if buses[ii] == int(bus):
-						if circuits[ii] == int(circuit):
+						if str(circuits[ii]) == str(circuit):
 							mdldata = mdl
 							index = ii
 				flag = False
@@ -225,7 +225,9 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	if len(shunts) != 0:
 		system_file.write("// -- Connecting banks:\n")
 		for ii in range(len(shunts)):
-			system_file.write("  connect(bank%d_bus%d.p,bus_%d.p); \n" % ((ii+1),int(shunts.iloc[ii,0]),int(shunts.iloc[ii,0])))
+			bn = int(shunts.iloc[ii,0]) # bus number
+			shunt_id = shunts.iloc[ii,1].strip("'") # equipment id
+			system_file.write("  connect(bank%s_%d.p,bus_%d.p); \n" % (shunt_id.strip(" "),bn,bn))
 	else:
 		system_file.write("// No shunt bank to connect.\n")
 	# Starting CONNECTION OF GENERATION UNITS:
@@ -1094,59 +1096,69 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 	# ----- Creating machines package .order file:
 	packageorder = open(pkg_ordr,"w+")
 	for ii in range(ngens):
-		packageorder.write('Gen%d_%d\n' % ((ii+1),int(gens.iloc[ii,0])))
+		# Check if machine is declared in DYR
+		macresult = lookFor('machine',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+		# Test
+		if macresult[0] != 'None':
+			# Write machine in .order file
+			packageorder.write('Gen%d_%d\n' % ((ii+1),int(gens.iloc[ii,0])))
+		else:
+			# Print warning message:
+			print("Warning: Bus %d declared as PV but has unrecognized generator declared in DYR. Model is: %s." % (int(gens.iloc[ii,0]),str(macresult[0])))
 	packageorder.close()
 	# ----- Writing each generator .mo file:
 	for ii in range(len(gens)):
-		genname = "Gen"+str((ii+1))+"_"+str(int(gens.iloc[ii,0]))
-		genmo = open(genname+".mo","w+")
-		genmo.write("within System.Generators;\n")
-		genmo.write("model %s\n" % genname)
-		genmo.write("  extends OpenIPSL.Electrical.Essentials.pfComponent;\n")
-		genmo.write("  OpenIPSL.Interfaces.PwPin pin  annotation (Placement(transformation(extent={{100,-10},{120,10}})));\n")
-		# Declaring machines:
-		print(gens.iloc[ii,8])
-		macresult = lookFor('machine',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
-		writeMac(gens,ii,dyrdata,macresult,genmo)
-		if macresult[0] != 'GENCLS':
-			# Declaring exciters:
-			excresult = lookFor('exciter',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
-			writeExc(dyrdata,excresult,genmo)
-			# Declaring stabilizers:
-			pssresult = lookFor('stabilizer',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
-			writePss(dyrdata,pssresult,genmo)
-			# Declaring governors:
-			govresult = lookFor('governor',gens.iloc[ii,0],int(gens.iloc[ii,8]),dyrdata)
-			writeGov(gens,ii,dyrdata,govresult,genmo)
-		# Starting connection:
-		list_exc = ['ESST4B'] # list of exciters with an integrated voltage compensator
-		genmo.write("equation\n")
-		if macresult[0] != 'GENCLS':
-			if excresult[0] in list_exc:
-				genmo.write("  connect(machine.p,exciter.Gen_Terminal);\n") # connecting machine to pin if exciter has an integrated voltage compensator
-				genmo.write("  connect(exciter.Bus,pin);\n") # connecting machine to pin if exciter has an integrated voltage compensator
+		# Check if machine is declared in DYR
+		macresult = lookFor('machine',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+		if macresult[0] != 'None':
+			genname = "Gen"+str((ii+1))+"_"+str(int(gens.iloc[ii,0]))
+			genmo = open(genname+".mo","w+")
+			genmo.write("within System.Generators;\n")
+			genmo.write("model %s\n" % genname)
+			genmo.write("  extends OpenIPSL.Electrical.Essentials.pfComponent;\n")
+			genmo.write("  OpenIPSL.Interfaces.PwPin pin  annotation (Placement(transformation(extent={{100,-10},{120,10}})));\n")
+			# Declaring machines:
+			#macresult = lookFor('machine',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+			writeMac(gens,ii,dyrdata,macresult,genmo)
+			if macresult[0] != 'GENCLS':
+				# Declaring exciters:
+				excresult = lookFor('exciter',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+				writeExc(dyrdata,excresult,genmo)
+				# Declaring stabilizers:
+				pssresult = lookFor('stabilizer',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+				writePss(dyrdata,pssresult,genmo)
+				# Declaring governors:
+				govresult = lookFor('governor',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+				writeGov(gens,ii,dyrdata,govresult,genmo)
+			# Starting connection:
+			list_exc = ['ESST4B'] # list of exciters with an integrated voltage compensator
+			genmo.write("equation\n")
+			if macresult[0] != 'GENCLS':
+				if excresult[0] in list_exc:
+					genmo.write("  connect(machine.p,exciter.Gen_Terminal);\n") # connecting machine to pin if exciter has an integrated voltage compensator
+					genmo.write("  connect(exciter.Bus,pin);\n") # connecting machine to pin if exciter has an integrated voltage compensator
+				else:
+					genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if no voltage compensator is present
 			else:
-				genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if no voltage compensator is present
-		else:
-			genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if GENCLS
-		
-		if macresult[0] != 'GENCLS':
-			# Declaring Compensators
-			connectExc(dyrdata,excresult,genmo) # connecting exciter to machine
-			connectPss(dyrdata,pssresult,genmo) # connecting pss to machine
-			connectGov(dyrdata,govresult,genmo) # connecting turbine-governor to machine
-		# Create icon for generator:
-		genmo.write("  annotation (\n")
-		genmo.write("    Icon(coordinateSystem(\n")
-		genmo.write("           extent={{-100,-100},{100,100}},\n")
-		genmo.write("           preserveAspectRatio=false, grid={1,1}),\n")
-		genmo.write("         graphics={Line(\n")
-		genmo.write("           points={{-76,-26},{-28,52},{27,-52},{74,23}},\n")
-		genmo.write("           color={0,0,255},\n")
-		genmo.write("           smooth=Smooth.Bezier), Ellipse(extent={{-100,-100},{100,100}},\n")
-		genmo.write("           lineColor={0,0,255})}));\n")
-		# End model:
-		genmo.write("end %s;" % genname)
+				genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if GENCLS
+			
+			if macresult[0] != 'GENCLS':
+				# Connecting all devices:
+				connectExc(dyrdata,excresult,genmo) # connecting exciter to machine
+				connectPss(dyrdata,pssresult,genmo) # connecting pss to machine
+				connectGov(dyrdata,govresult,genmo) # connecting turbine-governor to machine
+			# Create icon for generator:
+			genmo.write("  annotation (\n")
+			genmo.write("    Icon(coordinateSystem(\n")
+			genmo.write("           extent={{-100,-100},{100,100}},\n")
+			genmo.write("           preserveAspectRatio=false, grid={1,1}),\n")
+			genmo.write("         graphics={Line(\n")
+			genmo.write("           points={{-76,-26},{-28,52},{27,-52},{74,23}},\n")
+			genmo.write("           color={0,0,255},\n")
+			genmo.write("           smooth=Smooth.Bezier), Ellipse(extent={{-100,-100},{100,100}},\n")
+			genmo.write("           lineColor={0,0,255})}));\n")
+			# End model:
+			genmo.write("end %s;" % genname)
 #=========================================================================================      
 # Function: writeMo
 # Authors: marcelofcastro       
