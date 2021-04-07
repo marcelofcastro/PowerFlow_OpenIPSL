@@ -67,9 +67,9 @@ def parse_dyr(file):
             single_list = single_line.split("'")
 
             list_length = len(single_list)
-            #print(list_length)
+            
             psse_model = single_list[1].strip()
-            #print(single_list) # here i printed all the lines from the list!
+            # this code was added in order to be able to process different ways of declaring DYR data:
             if list_length == 5:
                 input_concat_dict[psse_model].append(single_list[0] + single_list[3] + single_list[4])
             elif list_length == 7:
@@ -77,7 +77,6 @@ def parse_dyr(file):
             else:
                 input_concat_dict[psse_model].append(single_list[0] + single_list[2])
                 
-            #print(input_concat_dict[psse_model])
             multi_line = list()
 
     # construct pandas dataframe for all models
