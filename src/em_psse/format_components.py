@@ -175,7 +175,10 @@ def format_transformer(df,s_system=100):
 			if cw == 1 or cw == 3:
 				return wind 
 			elif cw == 2:
-				return wind / nom
+				if nom == 0:
+					return wind
+				else:
+					return wind / nom
 			else:
 				raise Exception('Unknown')
 		return _get_winding

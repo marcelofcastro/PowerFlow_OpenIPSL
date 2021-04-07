@@ -141,7 +141,7 @@ def parse_raw(in_file_name):
 	}
 
 	# Read file and store in container
-	with open(in_file_name,'r') as in_file:
+	with open(in_file_name,'r',encoding='latin1') as in_file:
 		line = in_file.readline()
 		line_num = 0
 		while line:

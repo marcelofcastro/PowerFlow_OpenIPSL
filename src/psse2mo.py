@@ -22,7 +22,7 @@ import logging # importing additional libraries
 def getRawBase(rawfile):
 	rawContent = [] # starting raw list.
 	# ----- Opening the .raw file:
-	with open(rawfile, "r+") as raw_file: # opens the raw file for reading
+	with open(rawfile, "r+", encoding='latin1') as raw_file: # opens the raw file for reading
 		for line in raw_file:
 			rawContent.append(line) # adds line
 	FirstLine = rawContent[0].strip().split('/')
