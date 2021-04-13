@@ -38,22 +38,27 @@ def debug():
     print(srcdir)
     print(auxdir)
 def frompsse():
+    # ----- RAW file reader:
     rawfile = directory_functions.askRawfile() # ask the user which raw file will be translated
     start_readraw = time.time() # initial time for raw.
-    [system_base,system_frequency,sysdata] = psse2mo.readRaw(rawfile) # parse and format rawfile for sysdata
+    [system_base,system_frequency,sysdata,psse_version] = psse2mo.readRaw(rawfile) # parse and format rawfile for sysdata
     time_readraw = time.time() - start_readraw # time for raw.
+    # ----- DYR file reader:
     dyrfile = directory_functions.askDyrfile() # ask the user which dyr file will be translated
     start_readdyr = time.time() # initial time for dyr.
     dyrdata = psse2mo.readDyr(dyrfile)
     time_readdyr = time.time() - start_readdyr # time for dyr.
+    # ----- Creating directories:
     userpath = directory_functions.askDir() # get directory where user wants files to be placed
+    # ----- Translation to Modelica:
     start_trans = time.time() # initial time.
     [wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath) # creates folders for placement of results   
     psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata) # writes models
     time_trans = time.time()- start_trans # calculate execution time
+    # ----- Updating parameters and writing log:
     total_time = time_trans + time_readraw + time_readdyr
-    message = " Execution time for reading RAW file: %.6f.\n Execution time for reading DYR file: %.6f.\n Execution time for translation of the system: %.6f.\n Total execution time: %.6f." % (time_readraw,time_readdyr,time_trans,total_time)
-    tkMessageBox.showinfo("Translation Terminated", message) # displays execution time
+    times = [time_readraw,time_readdyr,time_trans,total_time]
+    psse2mo.writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,times)
 #==================================================================================
 # Code Part: Graphical User Interface   
 # Author: marcelofcastro          

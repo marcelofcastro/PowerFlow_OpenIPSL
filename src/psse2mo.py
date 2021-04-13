@@ -13,6 +13,7 @@ from em_psse import * # importing raw PARSER
 from andes_dyr import * # importing dyr PARSER
 import argparse # importing additional libraries
 import logging # importing additional libraries
+import time, datetime # importing time libraries
 #=========================================================================================      
 # Function: getRawBase
 # Authors: marcelofcastro        
@@ -34,7 +35,7 @@ def getRawBase(rawfile):
 	# ----- Message for confirming data is correct:
 	message = " PSS(R)E version: %.0f.\n System power base: %.1f MVA.\n System frequency: %.0f Hz." % (psse_version,system_base,system_frequency)
 	tkMessageBox.showinfo("PSSE File Parsed", message) # displays psse version, base power and system frequency
-	return [system_base,system_frequency]
+	return [system_base,system_frequency,psse_version]
 #=========================================================================================      
 # Function: readRaw
 # Authors: anderson-optimization and marcelofcastro          
@@ -45,14 +46,14 @@ def getRawBase(rawfile):
 def readRaw(rawfile):
 	raw_data=parse_raw(rawfile)
 	sysdata=format_all(raw_data)
-	[system_base,system_frequency] = getRawBase(rawfile)
+	[system_base,system_frequency,psse_version] = getRawBase(rawfile)
 	# df_fixshnt=sysdata['fixedshunt']
 	# df_tf=sysdata['transformer']
 	# df_gen=sysdata['gen']
 	# df_branch=sysdata['branch']
 	# df_load=sysdata['load']
 	# df_bus=sysdata['bus']
-	return [system_base,system_frequency,sysdata]
+	return [system_base,system_frequency,sysdata,psse_version]
 #=========================================================================================      
 # Function: readDyr
 # Authors: cuihantao and marcelofcastro          
@@ -1166,13 +1167,50 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 #=========================================================================================
 def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata):
 	# ----- Initializing file name:
-	networkname = "power_grid"
-	pkg_name = "package.mo"
-	pkg_ordr = "package.order"
+	networkname = "power_grid" # name of the network
+	pkg_name = "package.mo" # package name (modelica standard)
+	pkg_ordr = "package.order" # package order name (modelica standard)
 	# ----- Writing System Package:
 	writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base)
 	# ----- Writing System Data Package:
 	writeDataMo(ddir,pkg_name,pkg_ordr,sysdata)
 	# ----- Writing Generator Data:
 	writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata)
-
+#=========================================================================================      
+# Function: writeLog
+# Authors: marcelofcastro          
+# Description: It uses the information from the usual procedure to create an output log
+# that can be used to extract information from the translation procedure.
+#=========================================================================================
+def writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,times):
+	logname = "tlog.txt" # output log name
+	# ----- Changing directory to working directory
+	os.chdir(wdir)
+	# ----- Creating log file:
+	logfile = open(logname,"w+")
+	# ----- Writing basic information:
+	logfile.write("Log-file of translation program using psse2mo\n")
+	unix_time = time.time() # time right now in unix timestamp
+	now_time = datetime.datetime.fromtimestamp(unix_time) # converting time to date
+	logfile.write("   (generated: %s)\n\n\n" % (str(now_time))) # printing info in log
+	# ----- Writing information about RAW file:
+	logfile.write("RAW Parser Started... \n")
+	logfile.write("   PSS(R)E version: %.0f.\n" % psse_version) 
+	logfile.write("   System power base: %.1f MVA.\n" % system_base) 
+	logfile.write("   System frequency: %.0f Hz. \n" % system_frequency)
+	nbuses = len(sysdata['bus']) # number of buses
+	ngens = len(sysdata['gen']) # number of machines
+	logfile.write("   Number of buses in system: %d.\n" % int(nbuses)) 
+	logfile.write("   Number of generation units in system: %d.\n\n\n" % int(ngens))
+	# ----- Writing information about DYR file:
+	logfile.write("DYR Parser Started... \n\n\n")
+	# ----- Writing information about Translation file:
+	logfile.write("Translation Started... \n\n\n")
+	# ----- Writing information about CPU consumption:
+	logfile.write("Process Terminated\n")
+	logfile.write("   Execution time for reading RAW file          : %.6f.\n" % float(times[0]))
+	logfile.write("   Execution time for reading DYR file          : %.6f.\n" % float(times[1]))
+	logfile.write("   Execution time for translation of the system : %.6f.\n" % float(times[2]))
+	logfile.write("   Total execution time                         : %.6f.\n\n" % float(times[3]))
+	# ----- Closing file:
+	logfile.close()
