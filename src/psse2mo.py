@@ -1189,28 +1189,28 @@ def writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,time
 	# ----- Creating log file:
 	logfile = open(logname,"w+")
 	# ----- Writing basic information:
-	logfile.write("Log-file of translation program using psse2mo\n")
+	logfile.write("Log-file of translation program\n")
 	unix_time = time.time() # time right now in unix timestamp
 	now_time = datetime.datetime.fromtimestamp(unix_time) # converting time to date
-	logfile.write("   (generated: %s)\n\n\n" % (str(now_time))) # printing info in log
+	logfile.write("(generated: %s)\n\n\n" % (str(now_time))) # printing info in log
 	# ----- Writing information about RAW file:
 	logfile.write("RAW Parser Started... \n")
-	logfile.write("   PSS(R)E version: %.0f.\n" % psse_version) 
-	logfile.write("   System power base: %.1f MVA.\n" % system_base) 
-	logfile.write("   System frequency: %.0f Hz. \n" % system_frequency)
+	logfile.write("   PSS(R)E version: %.0f\n" % psse_version) 
+	logfile.write("   System power base: %.1f MVA\n" % system_base) 
+	logfile.write("   System frequency: %.0f Hz\n" % system_frequency)
 	nbuses = len(sysdata['bus']) # number of buses
 	ngens = len(sysdata['gen']) # number of machines
-	logfile.write("   Number of buses in system: %d.\n" % int(nbuses)) 
-	logfile.write("   Number of generation units in system: %d.\n\n\n" % int(ngens))
+	logfile.write("   Number of buses in system: %d\n" % int(nbuses)) 
+	logfile.write("   Number of generation units in system: %d\n\n\n" % int(ngens))
 	# ----- Writing information about DYR file:
 	logfile.write("DYR Parser Started... \n\n\n")
 	# ----- Writing information about Translation file:
 	logfile.write("Translation Started... \n\n\n")
 	# ----- Writing information about CPU consumption:
 	logfile.write("Process Terminated\n")
-	logfile.write("   Execution time for reading RAW file          : %.6f.\n" % float(times[0]))
-	logfile.write("   Execution time for reading DYR file          : %.6f.\n" % float(times[1]))
-	logfile.write("   Execution time for translation of the system : %.6f.\n" % float(times[2]))
-	logfile.write("   Total execution time                         : %.6f.\n\n" % float(times[3]))
+	logfile.write("   Execution time for reading RAW file          : %.6f\n" % float(times[0]))
+	logfile.write("   Execution time for reading DYR file          : %.6f\n" % float(times[1]))
+	logfile.write("   Execution time for translation of the system : %.6f\n" % float(times[2]))
+	logfile.write("   Total execution time                         : %.6f\n\n" % float(times[3]))
 	# ----- Closing file:
 	logfile.close()
