@@ -412,6 +412,26 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   Q_0 = Q_0,\n")
 		file.write("   v_0 = v_0,\n")
 		file.write("   angle_0 = angle_0)\n")
+	elif model == 'CSVGN1':
+		file.write("  OpenIPSL.Electrical.Banks.PSSE.CSVGN1 statcomp(\n")
+		file.write("   P_0 = 0,\n")
+		file.write("   Q_0 = Q_0,\n")
+		file.write("   v_0 = v_0,\n")
+		file.write("   angle_0 = angle_0)\n")
+		file.write("   ra = 0,\n")
+		file.write("   x1d = 9999,\n")
+		file.write("   K = %.4f,\n" % float(genlist.iloc[row,2]))
+		file.write("   T1 = %.4f,\n" % float(genlist.iloc[row,3]))
+		file.write("   T2 = %.4f,\n" % float(genlist.iloc[row,4]))
+		file.write("   T3 = %.4f,\n" % float(genlist.iloc[row,5]))
+		file.write("   T4 = %.4f,\n" % float(genlist.iloc[row,6]))
+		file.write("   T5 = %.4f,\n" % float(genlist.iloc[row,7]))
+		file.write("   RMIN = %.4f,\n" % float(genlist.iloc[row,8]))
+		file.write("   VMAX = %.4f,\n" % float(genlist.iloc[row,9]))
+		file.write("   VMIN = %.4f,\n" % float(genlist.iloc[row,10]))
+		file.write("   CBASE = %.4f,\n" % float(genlist.iloc[row,11])*1000000)
+		file.write("   MBASE = %.2f)\n" % Mb)
+
 	file.write("  annotation(Placement(transformation(extent={{20,-10},{40,10}})));\n")
 #=========================================================================================      
 # Function: writeExc
