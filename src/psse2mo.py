@@ -541,27 +541,29 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,16]))
 		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,17]))
 	elif model == 'ESST1A':
-		file.write("  Modelica.Blocks.Sources.Constant uel(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
+		file.write("  Modelica.Blocks.Sources.Constant uel1(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
+		file.write("  Modelica.Blocks.Sources.Constant uel2(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{32,-62},{12,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
+		file.write("  Modelica.Blocks.Sources.Constant VOS_NotActive(k=0) annotation (Placement(transformation(extent={{-70,-40},{-50,-20}})));\n")
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.ES.ESST1A exciter(\n")
-		file.write("   T_R = %.4f,\n" % float(eslist.iloc[row,2]))
-		file.write("   V_IMAX = %.4f,\n" % float(eslist.iloc[row,3]))
-		file.write("   V_IMIN = %.4f,\n" % float(eslist.iloc[row,4]))
-		file.write("   T_C = %.4f,\n" % float(eslist.iloc[row,5]))
-		file.write("   T_B = %.4f,\n" % float(eslist.iloc[row,6]))
-		file.write("   T_C1 = %.4f,\n" % float(eslist.iloc[row,7]))
-		file.write("   T_B1 = %.4f,\n" % float(eslist.iloc[row,8]))
-		file.write("   K_A = %.4f,\n" % float(eslist.iloc[row,9]))
-		file.write("   T_A = %.4f,\n" % float(eslist.iloc[row,10]))
-		file.write("   V_AMAX = %.4f,\n" % float(eslist.iloc[row,11]))
-		file.write("   V_AMIN = %.4f,\n" % float(eslist.iloc[row,12]))
-		file.write("   V_RMAX = %.4f,\n" % float(eslist.iloc[row,13]))
-		file.write("   V_RMIN = %.4f,\n" % float(eslist.iloc[row,14]))
-		file.write("   K_C = %.4f,\n" % float(eslist.iloc[row,15]))
-		file.write("   K_F = %.4f,\n" % float(eslist.iloc[row,16]))
-		file.write("   T_F = %.4f,\n" % float(eslist.iloc[row,17]))
-		file.write("   K_LR = %.4f,\n" % float(eslist.iloc[row,18]))
-		file.write("   I_LR = %.4f)\n" % float(eslist.iloc[row,19]))
+		file.write("   T_R = %.4f,\n" % float(eslist.iloc[row,4]))
+		file.write("   V_IMAX = %.4f,\n" % float(eslist.iloc[row,5]))
+		file.write("   V_IMIN = %.4f,\n" % float(eslist.iloc[row,6]))
+		file.write("   T_C = %.4f,\n" % float(eslist.iloc[row,7]))
+		file.write("   T_B = %.4f,\n" % float(eslist.iloc[row,8]))
+		file.write("   T_C1 = %.4f,\n" % float(eslist.iloc[row,9]))
+		file.write("   T_B1 = %.4f,\n" % float(eslist.iloc[row,10]))
+		file.write("   K_A = %.4f,\n" % float(eslist.iloc[row,11]))
+		file.write("   T_A = %.4f,\n" % float(eslist.iloc[row,12]))
+		file.write("   V_AMAX = %.4f,\n" % float(eslist.iloc[row,13]))
+		file.write("   V_AMIN = %.4f,\n" % float(eslist.iloc[row,14]))
+		file.write("   V_RMAX = %.4f,\n" % float(eslist.iloc[row,15]))
+		file.write("   V_RMIN = %.4f,\n" % float(eslist.iloc[row,16]))
+		file.write("   K_C = %.4f,\n" % float(eslist.iloc[row,17]))
+		file.write("   K_F = %.4f,\n" % float(eslist.iloc[row,18]))
+		file.write("   T_F = %.4f,\n" % float(eslist.iloc[row,19]))
+		file.write("   K_LR = %.4f,\n" % float(eslist.iloc[row,20]))
+		file.write("   I_LR = %.4f)\n" % float(eslist.iloc[row,21]))
 	elif model == 'ESST4B':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
@@ -797,21 +799,44 @@ def connectExc(dyrdata,result,file):
 	# ----- Extract results:
 	model = result[0]
 	row = result[1]
+	# ----- Extract list of models that match:
+	if model != 'None':
+		eslist = dyrdata[model]
 	# ----- List of Exciters by Group:
 	# list 01: need additional inputs or different connection
-	es_type_01 = ['ESST1A','ESST4B'] 
+	special_cases = ['ESST1A','ESST4B','ESDC2A'] 
 	# list 02: VT is an additional input
 	es_type_02 = ['ESDC2A','ESST1A']
 	# ----- Connect exciter:
-	file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(visible = true, points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));\n")
-	file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(visible = true, points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
-	file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(visible = true, points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));\n")
-	file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(visible = true, points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));\n")
-	file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(visible = true, points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));\n")
-	# ----- Test if we have exciter:
-	if model not in es_type_01:
+	if model not in special_cases:
+		file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));\n")
 		file.write("  connect(uel.y,exciter.VUEL) annotation(Line(points={{-19,-52},{-10,-52},{-10,-21}}, color={0,0,127}));\n")
 		file.write("  connect(oel.y,exciter.VOEL) annotation(Line(points={{-19,-84},{-6,-84},{-6,-21}}, color={0,0,127}));\n")
+	elif model == 'ESST1A':
+		file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));\n")
+		file.write("  connect(exciter.VT, exciter.ECOMP) annotation (Line(points={{-16.975,-17.825},{-18,-17.825},{-18,-30},{-21.71,-30},{-21.71,-10},{-17,-10}}, color={0,0,127}));\n")
+		file.write("  connect(uel1.y,exciter.VUEL) annotation(Line(points={{-19,-52},{-10,-52},{-10,-21}}, color={0,0,127}));\n")
+		file.write("  connect(uel2.y, exciter.VUEL2) annotation (Line(points={{11,-52},{-2.99,-52},{-2.99,-20.99}}, color={0,0,127}));\n")
+		file.write("  connect(uel2.y, exciter.VUEL3) annotation (Line(points={{11,-52},{-0.815,-52},{-0.815,-20.995}}, color={0,0,127}));\n")
+		file.write("  connect(oel.y,exciter.VOEL) annotation(Line(points={{-19,-84},{-6,-84},{-6,-21}}, color={0,0,127}));\n")
+		pss_flag = int(eslist.iloc[row,3])
+		if pss_flag == 2:
+			file.write("  connect(pss.VOTHSG, exciter.VOTHSG2) annotation (Line(points={{-49,0},{-40,0},{-40,-2},{-17,-2}}, color={0,0,127}));\n")
+			file.write("  connect(VOS_NotActive.y, exciter.VOTHSG) annotation (Line(points={{-49,-30},{-40,-30},{-40,-6},{-17,-6}}, color={0,0,127}));\n")
+		else:
+			file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));\n")
+			file.write("  connect(VOS_NotActive.y, exciter.VOTHSG2) annotation (Line(points={{-49,-30},{-32,-30},{-32,-2},{-17,-2}}, color={0,0,127}));\n")
+
+		
+
+
 	#if model in es_type_02:
 		#file.write("  connect(exciter.ECOMP,exciter.VT);")
 #=========================================================================================      
