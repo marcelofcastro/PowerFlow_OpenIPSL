@@ -473,7 +473,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,15]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,16]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,17]))
-		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,18]))
+		file.write("   S_EE_2 = %.4f,\n" % float(eslist.iloc[row,18]))
 		file.write("   V_RMAX = %.4f,\n" % float(eslist.iloc[row,19]))
 		file.write("   V_RMIN = %.4f)\n" % float(eslist.iloc[row,20]))
 	elif model == 'ESAC2A':
@@ -501,7 +501,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,20]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,21]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,22]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,23]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,23]))
 	elif model == 'ESDC1A':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
@@ -520,7 +520,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,14]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,15]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,16]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,17]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,17]))
 	elif model == 'ESDC2A':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
@@ -539,7 +539,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,14]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,15]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,16]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,17]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,17]))
 	elif model == 'ESST1A':
 		file.write("  Modelica.Blocks.Sources.Constant uel1(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant uel2(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{32,-62},{12,-42}})));\n")
@@ -605,7 +605,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,15]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,16]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,17]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,18]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,18]))
 	elif model == 'EXAC2':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
@@ -632,7 +632,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,21]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,22]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,23]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,24]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,24]))
 	elif model == 'EXNI':
 		# switch parameter
 		sw_fl = int(eslist.iloc[row,10])
@@ -685,7 +685,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,12]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,13]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,14]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,15]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,15]))
 	elif model == 'IEEET2':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
@@ -703,7 +703,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,12]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,13]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,14]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,15]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,15]))
 	elif model == 'IEEEX1':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
@@ -722,7 +722,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,14]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,15]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,16]))
-		file.write("   S_EE_1 = %.4f)\n" % float(eslist.iloc[row,17]))
+		file.write("   S_EE_2 = %.4f)\n" % float(eslist.iloc[row,17]))
 	elif model == 'SCRX':
 		# switch parameter
 		sw_fl = int(eslist.iloc[row,8])
@@ -810,14 +810,14 @@ def connectExc(dyrdata,result,file):
 	# ----- Connect exciter:
 	if model not in special_cases:
 		file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));\n")
-		file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.XADIFD, exciter.XADIFD) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
 		file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));\n")
 		file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));\n")
 		file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));\n")
 		file.write("  connect(uel.y,exciter.VUEL) annotation(Line(points={{-19,-52},{-10,-52},{-10,-21}}, color={0,0,127}));\n")
 		file.write("  connect(oel.y,exciter.VOEL) annotation(Line(points={{-19,-84},{-6,-84},{-6,-21}}, color={0,0,127}));\n")
 	elif model == 'ESST1A':
-		file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.XADIFD, exciter.XADIFD) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
 		file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));\n")
 		file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));\n")
 		file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));\n")
@@ -835,7 +835,7 @@ def connectExc(dyrdata,result,file):
 			file.write("  connect(VOS_NotActive.y, exciter.VOTHSG2) annotation (Line(points={{-49,-30},{-32,-30},{-32,-2},{-17,-2}}, color={0,0,127}));\n")
 	elif model == 'ESDC2A':
 		file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));\n")
-		file.write("  connect(machine.XADFID, exciter.XADFID) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
+		file.write("  connect(machine.XADIFD, exciter.XADIFD) annotation(Line(points = {{41, -9}, {43.537, -9}, {43.537, -24.895}, {2, -24.895}, {2, -21}}, color = {0,0,127}));\n")
 		file.write("  connect(machine.EFD0, exciter.EFD0) annotation(Line(points = {{41, -5}, {46.015, -5}, {46.015, -27.845}, {-20, -27.845}, {-20, -14}, {-17, -14}}, color = {0,0,127}));\n")
 		file.write("  connect(exciter.VT, exciter.ECOMP) annotation (Line(points={{-16.975,-17.825},{-18,-17.825},{-18,-30},{-21.71,-30},{-21.71,-10},{-17,-10}}, color={0,0,127}));\n")
 		file.write("  connect(machine.ETERM, exciter.ECOMP) annotation(Line(points = {{41, -3}, {50, -3}, {50, -30}, {-21.71, -30}, {-21.71, -10}, {-27, -10}}, color = {0,0,127}));\n")
