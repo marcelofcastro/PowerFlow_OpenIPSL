@@ -801,7 +801,7 @@ def connectExc(dyrdata,result,file):
 	# ----- Extract results:
 	model = result[0]
 	row = result[1]
-	# ----- Extract list of models that match:
+	# ----- Extract parameters from exciter list:
 	if model != 'None':
 		eslist = dyrdata[model]
 	# ----- List of Exciters by Group:
@@ -874,7 +874,7 @@ def writePss(dyrdata,result,file):
 	# ----- Extract results:
 	model = result[0]
 	row = result[1]
-	# ----- Extract list of models that match:
+	# ----- Extract parameters from stabilizer list:
 	if model != 'None':
 		stlist = dyrdata[model]
 	# ----- Test if we have stabilizer:
@@ -882,25 +882,38 @@ def writePss(dyrdata,result,file):
 		file.write("  // No stabilizer, so disabled will be used\n")
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.DisabledPSS pss\n")
 	elif model == 'IEEEST':
+		# check flag for input:
+		inp_flag = int(stlist.iloc[row,2])
+		if inp_flag == 4:
+			file.write("  Modelica.Blocks.Math.Add getAccPot(k2=-1) annotation (Placement(transformation(extent={{-50,38},{-70,18}})));\n")
+		# filling parameters:
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.IEEEST pss(\n")
 		file.write("   A_1 = %.4f,\n" % float(stlist.iloc[row,4]))
 		file.write("   A_2 = %.4f,\n" % float(stlist.iloc[row,5]))
 		file.write("   A_3 = %.4f,\n" % float(stlist.iloc[row,6]))
 		file.write("   A_4 = %.4f,\n" % float(stlist.iloc[row,7]))
 		file.write("   A_5 = %.4f,\n" % float(stlist.iloc[row,8]))
-		file.write("   T_1 = %.4f,\n" % float(stlist.iloc[row,9]))
-		file.write("   T_2 = %.4f,\n" % float(stlist.iloc[row,10]))
-		file.write("   T_3 = %.4f,\n" % float(stlist.iloc[row,11]))
-		file.write("   T_4 = %.4f,\n" % float(stlist.iloc[row,12]))
-		file.write("   T_5 = %.4f,\n" % float(stlist.iloc[row,13]))
-		file.write("   T_6 = %.4f,\n" % float(stlist.iloc[row,14]))
-		file.write("   K_S = %.4f,\n" % float(stlist.iloc[row,15]))
-		file.write("   K_E = %.4f,\n" % float(stlist.iloc[row,16]))
+		file.write("   A_6 = %.4f,\n" % float(stlist.iloc[row,9]))
+		file.write("   T_1 = %.4f,\n" % float(stlist.iloc[row,10]))
+		file.write("   T_2 = %.4f,\n" % float(stlist.iloc[row,11]))
+		file.write("   T_3 = %.4f,\n" % float(stlist.iloc[row,12]))
+		file.write("   T_4 = %.4f,\n" % float(stlist.iloc[row,13]))
+		file.write("   T_5 = %.4f,\n" % float(stlist.iloc[row,14]))
+		file.write("   T_6 = %.4f,\n" % float(stlist.iloc[row,15]))
+		file.write("   K_S = %.4f,\n" % float(stlist.iloc[row,16]))
 		file.write("   L_SMAX = %.4f,\n" % float(stlist.iloc[row,17]))
 		file.write("   L_SMIN = %.4f,\n" % float(stlist.iloc[row,18]))
 		file.write("   V_CU = %.4f,\n" % float(stlist.iloc[row,19]))
 		file.write("   V_CL = %.4f)\n" % float(stlist.iloc[row,20]))
 	elif model == 'PSS2A':
+		# check flag for input 1:
+		inp_1_flag = int(stlist.iloc[row,2])
+		# check flag for input 2:
+		inp_2_flag = int(stlist.iloc[row,4])
+		# if flag is 4, need an extra block
+		if inp_1_flag == 4 or inp_2_flag == 4:
+			file.write("  Modelica.Blocks.Math.Add getAccPot(k2=-1) annotation (Placement(transformation(extent={{-50,38},{-70,18}})));\n")
+		# filling parameters:
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.PSS2A pss(\n")
 		file.write("   M = %d,\n" % int(stlist.iloc[row,6]))
 		file.write("   N = %d,\n" % int(stlist.iloc[row,7]))
@@ -922,6 +935,14 @@ def writePss(dyrdata,result,file):
 		file.write("   V_STMAX = %.4f,\n" % float(stlist.iloc[row,19]))
 		file.write("   V_STMIN = %.4f)\n" % float(stlist.iloc[row,20]))
 	elif model == 'PSS2B':
+		# check flag for input 1:
+		inp_1_flag = int(stlist.iloc[row,2])
+		# check flag for input 2:
+		inp_2_flag = int(stlist.iloc[row,4])
+		# if flag is 4, need an extra block
+		if inp_1_flag == 4 or inp_2_flag == 4:
+			file.write("  Modelica.Blocks.Math.Add getAccPot(k2=-1) annotation (Placement(transformation(extent={{-50,38},{-70,18}})));\n")
+		# filling parameters:
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.PSS2B pss(\n")
 		file.write("   M = %d,\n" % int(stlist.iloc[row,6]))
 		file.write("   N = %d,\n" % int(stlist.iloc[row,7]))
@@ -953,17 +974,67 @@ def writePss(dyrdata,result,file):
 #=========================================================================================      
 # Function: connectPss
 # Authors: marcelofcastro        
-# Description: It connects stabilizers to machines.
+# Description: It connects stabilizers to machines and exciters.
 #=========================================================================================
 def connectPss(dyrdata,result,file):
 	# ----- Extract results:
 	model = result[0]
 	row = result[1]
-	# ----- List of Exciters by Group:
+	# ----- Extract parameters from stabilizer list:
+	if model != 'None':
+		stlist = dyrdata[model]
+	# ----- List of stabilizers with similar structure:
+	pss2_list = ['PSS2A','PSS2B']
+	ieeest_list = ['IEEEST']
 	# ----- Test if we have exciter:
 	if model == 'None':
 		file.write("  connect(machine.PELEC, pss.V_S2) annotation (Line(points={{41,3},{54,3},{54,66},{-84,66},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
 		file.write("  connect(machine.SPEED, pss.V_S1) annotation (Line(points={{41,7},{46,7},{46,50},{-76,50},{-76,4},{-71,4}},color={0,0,127}));\n")
+	elif model in pss2_list:
+		# check flag for input 1:
+		inp_1_flag = int(stlist.iloc[row,2])
+		if inp_1_flag == 1: # 1- rotor speed deviation
+			file.write("  connect(machine.SPEED, pss.V_S1) annotation (Line(points={{41,7},{46,7},{46,50},{-76,50},{-76,4},{-71,4}},color={0,0,127}));\n")
+		elif inp_1_flag == 3: # generator electrical power in machine base power
+			file.write("  connect(machine.PELEC, pss.V_S1) annotation (Line(points={{41,3},{54,3},{54,70},{-76,70},{-76,4},{-71,4}}, color={0,0,127}));\n")
+		elif inp_1_flag == 4: # accelerating power:
+			file.write("  connect(governor.PMECH, getAccPot.u1) annotation (Line(points={{-9,29.8},{10,29.8},{10,14},{-40,14},{-40,22},{-48,22}}, color={0,0,127}));\n")
+			file.write("  connect(getAccPot.u2, machine.PELEC) annotation (Line(points={{-48,34},{-44,34},{-44,70},{54,70},{54,3},{41,3}}, color={0,0,127}));\n")
+			file.write("  connect(getAccPot.y, pss.V_S1) annotation (Line(points={{-71,28},{-76,28},{-76,4},{-71,4}}, color={0,0,127}));\n")
+		elif inp_1_flag == 5: # bus voltage
+			file.write("  connect(machine.ETERM, pss.V_S1) annotation (Line(points={{41,-3},{54,-3},{54,70},{-76,70},{-76,4},{-71,4}}, color={0,0,127}));\n")
+		else: # go to rotor speed deviation:
+			file.write("  connect(machine.SPEED, pss.V_S1) annotation (Line(points={{41,7},{46,7},{46,50},{-76,50},{-76,4},{-71,4}},color={0,0,127}));\n")
+		# check flag for input 2:
+		inp_2_flag = int(stlist.iloc[row,4])
+		if inp_2_flag == 1: # 1- rotor speed deviation
+			file.write("  connect(machine.SPEED, pss.V_S2) annotation (Line(points={{41,7},{46,7},{46,50},{-84,50},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+		elif inp_2_flag == 3: # generator electrical power in machine base power
+			file.write("  connect(machine.PELEC, pss.V_S2) annotation (Line(points={{41,3},{54,3},{54,70},{-84,70},{-84,-4},{-71,-4}}, color={0,0,127}));;\n")
+		elif inp_2_flag == 4: # accelerating power:
+			file.write("  connect(governor.PMECH, getAccPot.u1) annotation (Line(points={{-9,29.8},{10,29.8},{10,14},{-40,14},{-40,22},{-48,22}}, color={0,0,127}));\n")
+			file.write("  connect(getAccPot.u2, machine.PELEC) annotation (Line(points={{-48,34},{-44,34},{-44,70},{54,70},{54,3},{41,3}}, color={0,0,127}));\n")
+			file.write("  connect(getAccPot.y, pss.V_S2) annotation (Line(points={{-71,28},{-84,28},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+		elif inp_2_flag == 5: # bus voltage
+			file.write("  connect(machine.ETERM, pss.V_S2) annotation (Line(points={{41,-3},{54,-3},{54,70},{-84,70},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+		else: # go to rotor speed deviation:
+			file.write("  connect(machine.SPEED, pss.V_S2) annotation (Line(points={{41,7},{46,7},{46,50},{-84,50},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+	elif model in ieeest_list:
+		file.write("  connect(machine.ETERM, pss.V_CT) annotation (Line(points={{41,-3},{54,-3},{54,70},{-76,70},{-76,4},{-72,4}}, color={0,0,127}));\n")
+		# check flag for input:
+		inp_flag = int(stlist.iloc[row,2])
+		if inp_flag == 1: # 1- rotor speed deviation
+			file.write("  connect(machine.SPEED, pss.V_S) annotation (Line(points={{41,7},{46,7},{46,50},{-84,50},{-84,-4},{-72,-4}}, color={0,0,127}));;\n")
+		elif inp_flag == 3: # generator electrical power in machine base power
+			file.write("  connect(machine.PELEC, pss.V_S) annotation (Line(points={{41,3},{54,3},{54,70},{-84,70},{-84,-4},{-71,-4}}, color={0,0,127}));;\n")
+		elif inp_flag == 4: # accelerating power:
+			file.write("  connect(governor.PMECH, getAccPot.u1) annotation (Line(points={{-9,29.8},{10,29.8},{10,14},{-40,14},{-40,22},{-48,22}}, color={0,0,127}));\n")
+			file.write("  connect(getAccPot.u2, machine.PELEC) annotation (Line(points={{-48,34},{-44,34},{-44,70},{54,70},{54,3},{41,3}}, color={0,0,127}));\n")
+			file.write("  connect(getAccPot.y, pss.V_S) annotation (Line(points={{-71,28},{-84,28},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+		elif inp_flag == 5: # bus voltage
+			file.write("  connect(machine.ETERM, pss.V_S) annotation (Line(points={{41,-3},{54,-3},{54,70},{-84,70},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+		else: # go to rotor speed deviation:
+			file.write("  connect(machine.SPEED, pss.V_S) annotation (Line(points={{41,7},{46,7},{46,50},{-84,50},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
 #=========================================================================================      
 # Function: writeGov
 # Authors: marcelofcastro        
@@ -978,7 +1049,7 @@ def writeGov(genpdata,index,dyrdata,result,file):
 		tglist = dyrdata[model]
 	# ----- Test if we have governor:
 	if model == 'None':
-		file.write("  // No stabilizer, so disabled will be used:\n")
+		file.write("  // No turbine-governor, so disabled will be used:\n")
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.TG.ConstantPower governor \n")
 	elif model == 'GAST':
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.TG.GAST governor(\n")
