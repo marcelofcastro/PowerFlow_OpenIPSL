@@ -132,7 +132,7 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	# ----- Creating system package .mo file:
 	packagemo = open(pkg_name,"w+")
 	packagemo.write("package System \"System automatically translated from PSSE using Python_OpenIPSL.\" \n\n")
-	packagemo.write("annotation (uses(Modelica(version=\"3.2.3\"), Complex, OpenIPSL(version = \"2.0.0-beta.1\")), \n")
+	packagemo.write("annotation (uses(Modelica(version=\"3.2.3\"), Complex, OpenIPSL(version = \"2.0.0-dev\")), \n")
 	packagemo.write("            Documentation(info=\"<html> This package contains power system models translated from PSSE using Python_OpenIPSL.</html>\"));\n")
 	packagemo.write("end System;")
 	packagemo.close()
