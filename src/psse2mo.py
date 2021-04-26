@@ -308,7 +308,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 	# ----- Extract Mb:
 	Mb = float(genpdata.iloc[index,9])*1000000
 	# ----- Writing Parameters for models:
-	file.write("  //Writing machine:\n")
+	file.write("  // Writing machine:\n")
 	if model == 'GENCLS':
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENCLS machine(\n")
 		file.write("   H = %.4f,\n" % float(genlist.iloc[row,2]))
@@ -446,10 +446,10 @@ def writeExc(dyrdata,result,file):
 	if model != 'None':
 		eslist = dyrdata[model]
 	# ----- List of special models:
-	list_01 = ['ESST4B']
+	special_cases = ['ESST4B']
 	# ----- Test if we have exciter:
 	if model == 'None':
-		file.write("  //No exciter, so constant excitation will be used\n")
+		file.write("  // No exciter, so constant excitation will be used\n")
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.ES.ConstantExcitation exciter\n")
@@ -565,8 +565,8 @@ def writeExc(dyrdata,result,file):
 		file.write("   K_LR = %.4f,\n" % float(eslist.iloc[row,20]))
 		file.write("   I_LR = %.4f)\n" % float(eslist.iloc[row,21]))
 	elif model == 'ESST4B':
-		file.write("  Modelica.Blocks.Sources.Constant uel(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
-		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
+		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{20,-60},{40,-40}})));\n")
+		file.write("  Modelica.Blocks.Sources.Constant oel(k=Modelica.Constants.inf) annotation(Placement(transformation(extent={{20,-94},{40,-74}})));\n")
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.ES.ESST4B exciter(\n")
 		file.write("   T_R = %.4f,\n" % float(eslist.iloc[row,2]))
 		file.write("   K_PR = %.4f,\n" % float(eslist.iloc[row,3]))
@@ -584,7 +584,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   V_BMAX = %.4f,\n" % float(eslist.iloc[row,15]))
 		file.write("   K_C = %.4f,\n" % float(eslist.iloc[row,16]))
 		file.write("   X_L = %.4f,\n" % float(eslist.iloc[row,17]))
-		file.write("   THETA_P = %.4f);\n" % float(eslist.iloc[row,18]))
+		file.write("   THETAP = %.4f)\n" % float(eslist.iloc[row,18]))
 	elif model == 'EXAC1':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
 		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
@@ -788,8 +788,10 @@ def writeExc(dyrdata,result,file):
 		file.write("   T_1 = %.4f,\n" % float(eslist.iloc[row,10]))
 		file.write("   K_C = %.4f)\n" % float(eslist.iloc[row,11]))
 	
-	if model not in list_01:
+	if model not in special_cases:
 		file.write("    annotation(Placement(transformation(extent={{-16,-20},{4,0}})));\n")
+	elif model == 'ESST4B':
+		file.write("    annotation(Placement(transformation(extent={{62,-18},{82,2}})));\n")
 #=========================================================================================      
 # Function: connectExc
 # Authors: marcelofcastro        
@@ -803,10 +805,8 @@ def connectExc(dyrdata,result,file):
 	if model != 'None':
 		eslist = dyrdata[model]
 	# ----- List of Exciters by Group:
-	# list 01: need additional inputs or different connection
+	# list: need additional inputs or different connection
 	special_cases = ['ESST1A','ESST4B','ESDC2A','URST5T'] 
-	# list 02: VT is an additional input
-	es_type_02 = ['ESDC2A','ESST1A']
 	# ----- Connect exciter:
 	if model not in special_cases:
 		file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation(Line(points = {{-49, 0}, {-40, 0}, {-40, -5.663}, {-17, -5.663}, {-17, -6}}, color = {0,0,127}));\n")
@@ -851,6 +851,16 @@ def connectExc(dyrdata,result,file):
 		file.write("  connect(machine.EFD, exciter.EFD) annotation(Line(points = {{18, -5}, {10, -5}, {10, -10}, {5, -10}}, color = {0,0,127}));\n")
 		file.write("  connect(uel.y,exciter.VUEL) annotation(Line(points={{-19,-52},{-10,-52},{-10,-21}}, color={0,0,127}));\n")
 		file.write("  connect(oel.y,exciter.VOEL) annotation(Line(points={{-19,-84},{-6,-84},{-6,-21}}, color={0,0,127}));\n")
+	elif model == 'ESST4B':
+		file.write("  connect(pss.VOTHSG, exciter.VOTHSG) annotation (Line(points={{-49,0},{4,0},{4,-20},{58,-20},{58,-4},{61,-4}}, color={0,0,127}));\n")
+		file.write("  connect(machine.XADIFD, exciter.XADIFD) annotation (Line(points={{41,-9},{50,-9},{50,-24},{80,-24},{80,-19}}, color={0,0,127}));\n")
+		file.write("  connect(machine.EFD0, exciter.EFD0) annotation (Line(points={{41,-5},{52,-5},{52,-12},{61,-12}}, color={0,0,127}));\n")
+		file.write("  connect(machine.ETERM, exciter.ECOMP) annotation (Line(points={{41,-3},{54,-3},{54,-8},{61,-8}}, color={0,0,127}));\n")
+		file.write("  connect(exciter.EFD, machine.EFD) annotation (Line(points={{83,-8},{90,-8},{90,-26},{10,-26},{10,-5},{18,-5}}, color={0,0,127}));\n")
+		file.write("  connect(uel.y, exciter.VUEL) annotation (Line(points={{41,-50},{68,-50},{68,-19}}, color={0,0,127}));\n")
+		file.write("  connect(oel.y, exciter.VOEL) annotation (Line(points={{41,-84},{72,-84},{72,-19}}, color={0,0,127}));\n")
+
+
 
 		
 	#if model in es_type_02:
@@ -953,7 +963,7 @@ def connectPss(dyrdata,result,file):
 	# ----- Test if we have exciter:
 	if model == 'None':
 		file.write("  connect(machine.PELEC, pss.V_S2) annotation (Line(points={{41,3},{54,3},{54,66},{-84,66},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
-		file.write("  connect(machine.SPEED, pss.V_S1) annotation (Line(points={{41,7},{46,7},{46,50},{-76,50},{-76,4},{-71,4}}, color={0,0,127}));\n")
+		file.write("  connect(machine.SPEED, pss.V_S1) annotation (Line(points={{41,7},{46,7},{46,50},{-76,50},{-76,4},{-71,4}},color={0,0,127}));\n")
 #=========================================================================================      
 # Function: writeGov
 # Authors: marcelofcastro        
@@ -1136,7 +1146,7 @@ def connectGov(dyrdata,result,file):
 	row = result[1]
 	# ----- Test if we have exciter:
 	file.write("  connect(governor.PMECH, machine.PMECH) annotation(Line(visible = true, points = {{-9, 30}, {10, 30}, {10, 5}, {18, 5}}, color = {0,0,127}));\n")
-	file.write("  connect(machine.SPEED, governor.SPEED) annotation(Line(visible = true, points = {{41, 7}, {45.661, 7}, {45.661, 50}, {-34.805, 50}, {-34.805, 35.396}, {-28, 35.396}, {-28, 36}}, color = {0,0,127}));\n")
+	file.write("  connect(machine.SPEED, governor.SPEED) annotation(Line(visible = true, points={{41,7},{46,7},{46,50},{-34.805,50},{-34.805,35.396},{-28,35.396},{-28,36}},color = {0,0,127}));\n")
 	file.write("  connect(machine.PMECH0, governor.PMECH0) annotation(Line(visible = true, points = {{41, 5}, {50, 5}, {50, 60}, {-40, 60}, {-40, 24}, {-28, 24}}, color = {0, 0, 127}));\n")
 #=========================================================================================      
 # Function: writeGenMo
@@ -1197,8 +1207,8 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 			genmo.write("equation\n")
 			if macresult[0] != 'GENCLS':
 				if excresult[0] in list_exc:
-					genmo.write("  connect(machine.p,exciter.Gen_Terminal);\n") # connecting machine to pin if exciter has an integrated voltage compensator
-					genmo.write("  connect(exciter.Bus,pin);\n") # connecting machine to pin if exciter has an integrated voltage compensator
+					genmo.write("  connect(machine.p, exciter.Gen_terminal) annotation (Line(points={{40,0},{63,0}}, color={0,0,255}));\n") # connecting machine to pin if exciter has an integrated voltage compensator
+					genmo.write("  connect(exciter.Bus, pin) annotation (Line(points={{81,0},{110,0}}, color={0,0,255}));\n") # connecting machine to pin if exciter has an integrated voltage compensator
 				else:
 					genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if no voltage compensator is present
 			else:
