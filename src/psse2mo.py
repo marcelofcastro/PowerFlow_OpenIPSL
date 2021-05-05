@@ -121,8 +121,14 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	buses = sysdata['bus'] # getting bus data 
 	gens = sysdata['gen'] # getting generator data
 	lines = sysdata['branch'] # getting transmission line data
-	transf = sysdata['transformer'] # getting transformer data
-	loads = sysdata['load'] # getting load data
+	try:
+		transf = sysdata['transformer'] # getting transformer data
+	except:
+		transf = []
+	try:
+		loads = sysdata['load'] # getting load data
+	except:
+		loads = []
 	try:
 		shunts = sysdata['fixedshunt'] # getting shunt data
 	except:
@@ -416,7 +422,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("  Real BusV(start=v_0);\n")
 		file.write("  Modelica.Blocks.Sources.Constant ConstantPSS(k=0) annotation (Placement(transformation(extent={{-40,-40},{-20,-20}})));\n")
 		file.write("  Modelica.Blocks.Sources.RealExpression BusVoltageMagnitude(y=BusV) annotation (Placement(transformation(extent={{-40,20},{-20,40}})));\n")
-		file.write("  OpenIPSL.Electrical.Banks.PSSE.CSVGN1 machine(\n")
+		file.write("  OpenIPSL.Electrical.Banks.PSSE.CSVGN1 statcomp(\n")
 		file.write("   P_0 = 0,\n")
 		file.write("   Q_0 = Q_0,\n")
 		file.write("   v_0 = v_0,\n")
@@ -435,6 +441,23 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		Cb = float(genlist.iloc[row,11])*1000000
 		file.write("   CBASE = %.2f,\n" % Cb)
 		file.write("   MBASE = %.2f)\n" % Mb)
+	elif model == 'WT4G1':
+		file.write("  OpenIPSL.Electrical.Wind.PSSE.WT4G.WT4G1 windmachine(\n")
+		file.write("   M_b = %.2f,\n" % Mb)
+		file.write("   T_IQCmd = %.4f,\n" % float(genlist.iloc[row,2]))
+		file.write("   T_IPCmd = %.4f,\n" % float(genlist.iloc[row,3]))
+		file.write("   V_LVPL1 = %.4f,\n" % float(genlist.iloc[row,4]))
+		file.write("   V_LVPL2 = %.4f,\n" % float(genlist.iloc[row,5]))
+		file.write("   G_LVPL = %.4f,\n" % float(genlist.iloc[row,6]))
+		file.write("   V_HVRCR = %.4f,\n" % float(genlist.iloc[row,7]))
+		file.write("   CUR_HVRCR = %.4f,\n" % float(genlist.iloc[row,8]))
+		file.write("   RIp_LVPL = %.4f,\n" % float(genlist.iloc[row,9]))
+		file.write("   T_LVPL = %.4f,\n" % float(genlist.iloc[row,10]))
+		file.write("   V_b = V_b,\n")
+		file.write("   P_0 = P_0,\n")
+		file.write("   Q_0 = Q_0,\n")
+		file.write("   v_0 = v_0,\n")
+		file.write("   angle_0 = angle_0)\n")
 
 	file.write("  annotation(Placement(transformation(extent={{20,-10},{40,10}})));\n")
 #=========================================================================================      
@@ -1290,11 +1313,13 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 			else:
 				if macresult[0] == 'CSVGN1':
 					genmo.write("  BusV = sqrt(pin.vr*pin.vr + pin.vi*pin.vi);\n")
-					genmo.write("  connect(ConstantPSS.y, machine.VOTHSG) annotation (Line(points={{-19,-30},{0,-30},{0,-5},{18,-5}}, color={0,0,127}));\n")
-					genmo.write("  connect(BusVoltageMagnitude.y, machine.V) annotation (Line(points={{-19,30},{0,30},{0,5},{18,5}}, color={0,0,127}));\n")
-					genmo.write("  connect(machine.p,pin)  annotation (Line(points={{30,10},{30,32},{60,32},{60,0},{110,0}}, color={0,0,255}));\n") # connecting machine to pin if CSVGN
+					genmo.write("  connect(ConstantPSS.y, statcomp.VOTHSG) annotation (Line(points={{-19,-30},{0,-30},{0,-5},{18,-5}}, color={0,0,127}));\n")
+					genmo.write("  connect(BusVoltageMagnitude.y, statcomp.V) annotation (Line(points={{-19,30},{0,30},{0,5},{18,5}}, color={0,0,127}));\n")
+					genmo.write("  connect(statcomp.p,pin)  annotation (Line(points={{30,10},{30,32},{60,32},{60,0},{110,0}}, color={0,0,255}));\n") # connecting machine to pin if CSVGN
+				elif macresult[0] == 'WT4G1':
+					genmo.write("  connect(windmachine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if WT4G1
 				else:
-					genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if GENCLS or WT4G1
+					genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if GENCLS
 				
 			
 			if macresult[0] not in special_mac:
