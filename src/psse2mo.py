@@ -118,9 +118,18 @@ def lookFor(modeltype,bus,circuit,dyrdata):
 #=========================================================================================
 def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base):
 	# ----- Extracting information from system
-	buses = sysdata['bus'] # getting bus data 
-	gens = sysdata['gen'] # getting generator data
-	lines = sysdata['branch'] # getting transmission line data
+	try:
+		buses = sysdata['bus'] # getting bus data 
+	except:
+		buses = []
+	try:
+		gens = sysdata['gen'] # getting generator data
+	except:
+		gens = []
+	try:
+		lines = sysdata['branch'] # getting transmission line data
+	except:
+		lines = []
 	try:
 		transf = sysdata['transformer'] # getting transformer data
 	except:
