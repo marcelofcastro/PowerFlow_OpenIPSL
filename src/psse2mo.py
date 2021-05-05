@@ -413,11 +413,14 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   v_0 = v_0,\n")
 		file.write("   angle_0 = angle_0)\n")
 	elif model == 'CSVGN1':
-		file.write("  OpenIPSL.Electrical.Banks.PSSE.CSVGN1 statcomp(\n")
+		file.write("  Real BusV(start=v_0);\n")
+		file.write("  Modelica.Blocks.Sources.Constant ConstantPSS(k=0) annotation (Placement(transformation(extent={{-40,-40},{-20,-20}})));\n")
+		file.write("  Modelica.Blocks.Sources.RealExpression BusVoltageMagnitude(y=BusV) annotation (Placement(transformation(extent={{-40,20},{-20,40}})));\n")
+		file.write("  OpenIPSL.Electrical.Banks.PSSE.CSVGN1 machine(\n")
 		file.write("   P_0 = 0,\n")
 		file.write("   Q_0 = Q_0,\n")
 		file.write("   v_0 = v_0,\n")
-		file.write("   angle_0 = angle_0)\n")
+		file.write("   angle_0 = angle_0,\n")
 		file.write("   ra = 0,\n")
 		file.write("   x1d = 9999,\n")
 		file.write("   K = %.4f,\n" % float(genlist.iloc[row,2]))
@@ -429,7 +432,8 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   RMIN = %.4f,\n" % float(genlist.iloc[row,8]))
 		file.write("   VMAX = %.4f,\n" % float(genlist.iloc[row,9]))
 		file.write("   VMIN = %.4f,\n" % float(genlist.iloc[row,10]))
-		file.write("   CBASE = %.4f,\n" % float(genlist.iloc[row,11])*1000000)
+		Cb = float(genlist.iloc[row,11])*1000000
+		file.write("   CBASE = %.2f,\n" % Cb)
 		file.write("   MBASE = %.2f)\n" % Mb)
 
 	file.write("  annotation(Placement(transformation(extent={{20,-10},{40,10}})));\n")
@@ -1261,9 +1265,10 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 			genmo.write("  extends OpenIPSL.Electrical.Essentials.pfComponent;\n")
 			genmo.write("  OpenIPSL.Interfaces.PwPin pin  annotation (Placement(transformation(extent={{100,-10},{120,10}})));\n")
 			# Declaring machines:
-			#macresult = lookFor('machine',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
 			writeMac(gens,ii,dyrdata,macresult,genmo)
-			if macresult[0] != 'GENCLS':
+			# List of special machines:
+			special_mac = ['GENCLS','CSVGN1','WT4G1']
+			if macresult[0] not in special_mac:
 				# Declaring exciters:
 				excresult = lookFor('exciter',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
 				writeExc(dyrdata,excresult,genmo)
@@ -1276,16 +1281,23 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 			# Starting connection:
 			list_exc = ['ESST4B'] # list of exciters with an integrated voltage compensator
 			genmo.write("equation\n")
-			if macresult[0] != 'GENCLS':
+			if macresult[0] not in special_mac:
 				if excresult[0] in list_exc:
 					genmo.write("  connect(machine.p, exciter.Gen_terminal) annotation (Line(points={{40,0},{63,0}}, color={0,0,255}));\n") # connecting machine to pin if exciter has an integrated voltage compensator
 					genmo.write("  connect(exciter.Bus, pin) annotation (Line(points={{81,0},{110,0}}, color={0,0,255}));\n") # connecting machine to pin if exciter has an integrated voltage compensator
 				else:
 					genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if no voltage compensator is present
 			else:
-				genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if GENCLS
+				if macresult[0] == 'CSVGN1':
+					genmo.write("  BusV = sqrt(pin.vr*pin.vr + pin.vi*pin.vi);\n")
+					genmo.write("  connect(ConstantPSS.y, machine.VOTHSG) annotation (Line(points={{-19,-30},{0,-30},{0,-5},{18,-5}}, color={0,0,127}));\n")
+					genmo.write("  connect(BusVoltageMagnitude.y, machine.V) annotation (Line(points={{-19,30},{0,30},{0,5},{18,5}}, color={0,0,127}));\n")
+					genmo.write("  connect(machine.p,pin)  annotation (Line(points={{30,10},{30,32},{60,32},{60,0},{110,0}}, color={0,0,255}));\n") # connecting machine to pin if CSVGN
+				else:
+					genmo.write("  connect(machine.p,pin)  annotation(Line(origin = {75, 0}, points = {{40, 0}, {110, 0}}, color = {0, 0, 255}));\n") # connecting machine to pin if GENCLS or WT4G1
+				
 			
-			if macresult[0] != 'GENCLS':
+			if macresult[0] not in special_mac:
 				# Connecting all devices:
 				connectExc(dyrdata,excresult,genmo) # connecting exciter to machine
 				connectPss(dyrdata,pssresult,genmo) # connecting pss to machine
