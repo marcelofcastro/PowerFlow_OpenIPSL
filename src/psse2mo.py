@@ -1251,10 +1251,93 @@ def connectGov(dyrdata,result,file):
 	# ----- Extract results:
 	model = result[0]
 	row = result[1]
-	# ----- Test if we have exciter:
+	# ----- Connect TG:
 	file.write("  connect(governor.PMECH, machine.PMECH) annotation(Line(visible = true, points = {{-9, 30}, {10, 30}, {10, 5}, {18, 5}}, color = {0,0,127}));\n")
 	file.write("  connect(machine.SPEED, governor.SPEED) annotation(Line(visible = true, points={{41,7},{46,7},{46,50},{-34.805,50},{-34.805,35.396},{-28,35.396},{-28,36}},color = {0,0,127}));\n")
 	file.write("  connect(machine.PMECH0, governor.PMECH0) annotation(Line(visible = true, points = {{41, 5}, {50, 5}, {50, 60}, {-40, 60}, {-40, 24}, {-28, 24}}, color = {0, 0, 127}));\n")
+#=========================================================================================      
+# Function: writeWnd
+# Authors: marcelofcastro        
+# Description: It writes wind machine electrical control models.
+#=========================================================================================
+def writeWnd(dyrdata,result,file):
+	# ----- Extract results:
+	model = result[0]
+	row = result[1]
+	# ----- Extract list of models that match:
+	if model != 'None':
+		wdlist = dyrdata[model]
+	# ----- Test if we have governor:
+	if model == 'None':
+		file.write("  // No electrical control found for wind generator\n")
+	elif model == 'WT4E1':
+		# pf fast control enabling flag
+		pfaflg = int(wdlist.iloc[row,3])
+		if pfaflg == 1:
+			pfa = "true"
+		else:
+			pfa = "false"
+		# flag for Qord source
+		varflg = int(wdlist.iloc[row,4])
+		if varflg == 1:
+			vfa = "true"
+		else:
+			vfa = "false"
+		# pq priority flag
+		pqflg = int(wdlist.iloc[row,5])
+		if pqflg == 1:
+			pqf = "true"
+		else:
+			pqf = "false"
+		file.write("  OpenIPSL.Electrical.Wind.PSSE.WT4G.WT4E1 control(\n")
+		file.write("   PFAFLG = %s,\n" % pfa)
+		file.write("   VARFLG = %s,\n" % vfa)
+		file.write("   PQFLAG = %s,\n" % pqf)
+		file.write("   Tfv = %.4f,\n" % float(wdlist.iloc[row,6]))
+		file.write("   Kpv = %.4f,\n" % float(wdlist.iloc[row,7]))
+		file.write("   KIV = %.4f,\n" % float(wdlist.iloc[row,8]))
+		file.write("   Kpp = %.4f,\n" % float(wdlist.iloc[row,9]))
+		file.write("   KIP = %.4f,\n" % float(wdlist.iloc[row,10]))
+		file.write("   Kf = %.4f,\n" % float(wdlist.iloc[row,11]))
+		file.write("   Tf = %.4f,\n" % float(wdlist.iloc[row,12]))
+		file.write("   QMX = %.4f,\n" % float(wdlist.iloc[row,13]))
+		file.write("   QMN = %.4f,\n" % float(wdlist.iloc[row,14]))
+		file.write("   IPMAX = %.4f,\n" % float(wdlist.iloc[row,15]))
+		file.write("   TRV = %.4f,\n" % float(wdlist.iloc[row,16]))
+		file.write("   dPMX = %.4f,\n" % float(wdlist.iloc[row,17]))
+		file.write("   dPMN = %.4f,\n" % float(wdlist.iloc[row,18]))
+		file.write("   T_Power = %.4f,\n" % float(wdlist.iloc[row,19]))
+		file.write("   KQI = %.4f,\n" % float(wdlist.iloc[row,20]))
+		file.write("   VMINCL = %.4f,\n" % float(wdlist.iloc[row,21]))
+		file.write("   VMAXCL = %.4f,\n" % float(wdlist.iloc[row,22]))
+		file.write("   KVI = %.4f,\n" % float(wdlist.iloc[row,23]))
+		file.write("   Tv = %.4f,\n" % float(wdlist.iloc[row,24]))
+		file.write("   Tp = %.4f,\n" % float(wdlist.iloc[row,25]))
+		file.write("   ImaxTD = %.4f,\n" % float(wdlist.iloc[row,26]))
+		file.write("   Iphl = %.4f,\n" % float(wdlist.iloc[row,27]))
+		file.write("   Iqhl = %.4f,\n" % float(wdlist.iloc[row,28]))
+		file.write("   PSSEMATCH = true)")
+
+	file.write("    annotation (Placement(transformation(extent={{-16,10},{4,-10}})));\n")
+#=========================================================================================      
+# Function: connectWnd
+# Authors: marcelofcastro        
+# Description: It connects electrical control to wind machines.
+#=========================================================================================
+def connectWnd(dyrdata,result,file):
+	# ----- Extract results:
+	model = result[0]
+	row = result[1]
+	# ----- Connect Wind Control:
+	if model == 'None':
+		file.write("  connect(windmachine.I_qcmd0, windmachine.I_qcmd) annotation (Line(points={{24,11},{24,14},{16,14},{16,8},{21,8}}, color={0,0,127}));\n")
+		file.write("  connect(windmachine.I_pcmd0, windmachine.I_pcmd) annotation (Line(points={{28,11},{28,16},{14,16},{14,4},{21,4}}, color={0,0,127}));\n")
+	elif model == 'WT4E1':
+		file.write("  connect(control.WIQCMD, windmachine.I_qcmd) annotation (Line(points={{5,7},{12,7},{12,8},{21,8}}, color={0,0,127}));\n")
+		file.write("  connect(control.WIPCMD, windmachine.I_pcmd) annotation (Line(points={{5,3},{12,3},{12,4},{21,4}}, color={0,0,127}));\n")
+		file.write("  connect(windmachine.P, control.P) annotation (Line(points={{19,-4},{16,-4},{16,-2},{3,-2}}, color={0,0,127}));\n")
+		file.write("  connect(windmachine.Q, control.Q) annotation (Line(points={{19,-8},{14,-8},{14,-5},{3,-5}}, color={0,0,127}));\n")
+		file.write("  connect(windmachine.V, control.V) annotation (Line(points={{19,0},{10,0},{10,-8},{3,-8}}, color={0,0,127}));\n")
 #=========================================================================================      
 # Function: writeGenMo
 # Authors: marcelofcastro        
@@ -1310,6 +1393,11 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 				# Declaring governors:
 				govresult = lookFor('governor',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
 				writeGov(gens,ii,dyrdata,govresult,genmo)
+			elif macresult[0] == 'WT4G1':
+				# Declaring electrical control:
+				wndresult = lookFor('wind',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+				writeWnd(dyrdata,wndresult,genmo)
+
 			# Starting connection:
 			list_exc = ['ESST4B'] # list of exciters with an integrated voltage compensator
 			genmo.write("equation\n")
@@ -1336,6 +1424,9 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 				connectExc(dyrdata,excresult,genmo) # connecting exciter to machine
 				connectPss(dyrdata,pssresult,genmo) # connecting pss to machine
 				connectGov(dyrdata,govresult,genmo) # connecting turbine-governor to machine
+			elif macresult[0] == 'WT4G1':
+				# Connects control:
+				connectWnd(dyrdata,wndresult,genmo) # connects electrical control to machine
 			# Create icon for generator:
 			genmo.write("  annotation (\n")
 			genmo.write("    Icon(coordinateSystem(\n")
