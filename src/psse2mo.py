@@ -20,10 +20,14 @@ import time, datetime # importing time libraries
 # Description: this function asks for and transforms raw file in list of objects.
 # The function also extracts info about the system so it can be confirmed by user.
 #=========================================================================================
-def getRawBase(rawfile):
+def getRawBase(rawfile,encode_flag):
+	if int(encode_flag) == 1:
+		interpret = 'latin1'
+	else:
+		interpret = 'utf-8'
 	rawContent = [] # starting raw list.
 	# ----- Opening the .raw file:
-	with open(rawfile, "r+", encoding='latin1') as raw_file: # opens the raw file for reading
+	with open(rawfile, "r+", encoding=interpret) as raw_file: # opens the raw file for reading
 		for line in raw_file:
 			rawContent.append(line) # adds line
 	FirstLine = rawContent[0].strip().split('/')
@@ -32,9 +36,6 @@ def getRawBase(rawfile):
 	system_base = float(FirstLine[1]) # finding system base in first line
 	psse_version = float(FirstLine[2]) # finding psse version in first line
 	system_frequency = float(FirstLine[5]) # finding system_frequency in first line
-	# ----- Message for confirming data is correct:
-	message = " PSS(R)E version: %.0f.\n System power base: %.1f MVA.\n System frequency: %.0f Hz." % (psse_version,system_base,system_frequency)
-	tkMessageBox.showinfo("PSSE File Parsed", message) # displays psse version, base power and system frequency
 	return [system_base,system_frequency,psse_version]
 #=========================================================================================      
 # Function: readRaw
@@ -43,10 +44,10 @@ def getRawBase(rawfile):
 # The parser can be found in https://github.com/anderson-optimization/em-psse. In 
 # addition, the code also extracts information about the system.
 #=========================================================================================
-def readRaw(rawfile):
-	raw_data=parse_raw(rawfile)
+def readRaw(rawfile,encode_flag):
+	raw_data=parse_raw(rawfile,encode_flag)
 	sysdata=format_all(raw_data)
-	[system_base,system_frequency,psse_version] = getRawBase(rawfile)
+	[system_base,system_frequency,psse_version] = getRawBase(rawfile,encode_flag)
 	# df_fixshnt=sysdata['fixedshunt']
 	# df_tf=sysdata['transformer']
 	# df_gen=sysdata['gen']
