@@ -68,7 +68,7 @@ def frompsse(rawfile,dyrfile,encode_flag,userpath):
     tkMessageBox.showinfo("PSSE File Translated", message) # displays psse version, base power and system frequency
 def menu_from_psse():
 	# ----- Create widget window:
-	window = Tk()
+	window = Toplevel()
 	window.title("Translation Settings")
 	window.geometry('900x250')
 	# ----- Raw file path:
@@ -94,12 +94,11 @@ def menu_from_psse():
 	# ----- Configure RAW:
 	config = Label(window, text=".RAW interpreter:")
 	config.grid(column=0, row=2)
-	selected = IntVar()
-	rad1 = Radiobutton(window,text='utf-8', value=0, variable=selected)
-	rad2 = Radiobutton(window,text='latin1', value=1, variable=selected)
-	rad1.grid(column=1, row=2)
-	rad2.grid(column=1, row=3)
-	interp = selected.get()
+	var = IntVar()
+	def printvar():
+		print(var.get())
+	rad1 = Radiobutton(window, text='utf-8', variable=var, value=0, command=printvar).grid(column=1, row=2)
+	rad2 = Radiobutton(window, text='latin1', variable=var, value=1, command=printvar).grid(column=1, row=3)
 	# ----- Translation destination:
 	trn = Label(window, text="Translation dir:")
 	trn.grid(column=0, row=4)
@@ -112,7 +111,7 @@ def menu_from_psse():
 	btn3.grid(column=2, row=4)
 	# ----- Translation start button:
 	def startTranslation():
-		frompsse(txt1.get(),txt2.get(),interp,txt3.get())
+		frompsse(txt1.get(),txt2.get(),var.get(),txt3.get())
 		window.destroy()
 	strtbtn = Button(window, text="Start Translation", command=startTranslation)
 	strtbtn.grid(column=1, row=5)
