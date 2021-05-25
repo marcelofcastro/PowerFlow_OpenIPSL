@@ -70,7 +70,7 @@ def menu_from_psse():
 	# ----- Create widget window:
 	window = Tk()
 	window.title("Translation Settings")
-	window.geometry('800x250')
+	window.geometry('900x250')
 	# ----- Raw file path:
 	raw = Label(window, text=".RAW file path:")
 	raw.grid(column=0, row=0)
