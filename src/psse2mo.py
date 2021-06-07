@@ -520,8 +520,8 @@ def writeExc(dyrdata,result,file):
 		file.write("   V_RMAX = %.4f,\n" % float(eslist.iloc[row,19]))
 		file.write("   V_RMIN = %.4f)\n" % float(eslist.iloc[row,20]))
 	elif model == 'ESAC2A':
-		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
-		file.write("  Modelica.Blocks.Sources.Constant oel(k=0) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
+		file.write("  Modelica.Blocks.Sources.Constant uel(k=-Modelica.Constants.inf) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
+		file.write("  Modelica.Blocks.Sources.Constant oel(k=Modelica.Constants.inf) annotation(Placement(transformation(extent={{-40,-94},{-20,-74}})));\n")
 		file.write("  OpenIPSL.Electrical.Controls.PSSE.ES.ESAC2A exciter(\n")
 		file.write("   T_R = %.4f,\n" % float(eslist.iloc[row,2]))
 		file.write("   T_B = %.4f,\n" % float(eslist.iloc[row,3]))
