@@ -38,7 +38,7 @@ def donothing():
     filewin = Toplevel(root)
     button = Button(filewin, text="Do nothing button")
     button.pack()
-def frompsse(rawfile,dyrfile,encode_flag,userpath):
+def frompsse(rawfile,dyrfile,encode_flag,userpath,fault_flag,faultinfo):
     # ----- RAW file reader:
     #rawfile = directory_functions.askRawfile() 
     start_readraw = time.time() # initial time for raw.
@@ -54,12 +54,12 @@ def frompsse(rawfile,dyrfile,encode_flag,userpath):
     # ----- Translation to Modelica:
     start_trans = time.time() # initial time.
     [wdir,sdir,ddir,gdir] = directory_functions.createDir(userpath) # creates folders for placement of results   
-    psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata) # writes models
+    psse2mo.writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata,fault_flag,faultinfo) # writes models
     time_trans = time.time()- start_trans # calculate execution time
     # ----- Updating parameters and writing log:
     total_time = time_trans + time_readraw + time_readdyr
     times = [time_readraw,time_readdyr,time_trans,total_time]
-    psse2mo.writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,times) 
+    psse2mo.writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,times,fault_flag,faultinfo) 
     # ----- Message for confirming data is correct:
     message = " PSS(R)E version: %.0f.\n System power base: %.1f MVA.\n System frequency: %.0f Hz." % (psse_version,system_base,system_frequency)
     tkMessageBox.showinfo("PSSE File Translated", message) # displays psse version, base power and system frequency
@@ -112,7 +112,7 @@ def menu_from_psse():
 	fault_flag = IntVar()
 	def add_fault():
 		fault_info = []
-		if fault_flag.get() == 0:
+		if fault_flag.get() == 1:
 			fault_window = Toplevel()
 			fault_window.title("Fault Event Settings")
 			fault_window.geometry('300x200')
@@ -164,11 +164,11 @@ def menu_from_psse():
 			closebtn.grid(column=1,row=5)
 		else:
 			fault_info = [0,0,0,0,0]
-	opt1 = Radiobutton(window, text='yes', variable=fault_flag, value=0, command=add_fault).grid(column=1, row=5)
-	opt2 = Radiobutton(window, text='no', variable=fault_flag, value=1, command=add_fault).grid(column=1, row=6)
+	opt1 = Radiobutton(window, text='yes', variable=fault_flag, value=1, command=add_fault).grid(column=1, row=5)
+	opt2 = Radiobutton(window, text='no', variable=fault_flag, value=0, command=add_fault).grid(column=1, row=6)
 	# ----- Translation start button:
 	def startTranslation():
-		frompsse(txt1.get(),txt2.get(),var.get(),txt3.get())
+		frompsse(txt1.get(),txt2.get(),var.get(),txt3.get(),fault_flag.get(),fault_info)
 		window.destroy()
 	strtbtn = Button(window, text="Start Translation", command=startTranslation)
 	strtbtn.grid(column=1, row=7)

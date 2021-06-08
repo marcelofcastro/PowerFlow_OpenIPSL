@@ -3,9 +3,6 @@
 #=========================================================================================  
 # ----- Init. libraries:
 import os
-#from network_structure import DynSys # object class for buses
-#from network_structure import DynNode # object class for buses
-#from network_structure import DynCircuit # object class for buses
 import tkinter as tk # importing tk for GUI
 import tkinter.messagebox as tkMessageBox # functions for meassage box
 import tkinter.ttk as ttk # functions for displaying lists
@@ -14,7 +11,7 @@ from andes_dyr import * # importing dyr PARSER
 import argparse # importing additional libraries
 import logging # importing additional libraries
 import time, datetime # importing time libraries
-import math
+import math # importing math library for PI constant
 #=========================================================================================      
 # Function: getRawBase
 # Authors: marcelofcastro        
@@ -1472,7 +1469,7 @@ def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata):
 	pkg_name = "package.mo" # package name (modelica standard)
 	pkg_ordr = "package.order" # package order name (modelica standard)
 	# ----- Writing System Package:
-	writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base)
+	writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base,fault_flag,faultinfo)
 	# ----- Writing System Data Package:
 	writeDataMo(ddir,pkg_name,pkg_ordr,sysdata)
 	# ----- Writing Generator Data:
@@ -1483,7 +1480,7 @@ def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata):
 # Description: It uses the information from the usual procedure to create an output log
 # that can be used to extract information from the translation procedure.
 #=========================================================================================
-def writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,times):
+def writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,times,fault_flag,faultinfo):
 	logname = "tlog.txt" # output log name
 	# ----- Changing directory to working directory
 	os.chdir(wdir)
@@ -1507,6 +1504,16 @@ def writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,time
 	logfile.write("DYR Parser Started... \n\n\n")
 	# ----- Writing information about Translation file:
 	logfile.write("Translation Started... \n\n\n")
+	# ----- Writing information about event:
+	if fault_flag == 1:
+		logfile.write("Fault event was added...\n")
+		logfile.write("   Fault on Bus: %d\n" % int(faultinfo[0]))
+		logfile.write("   Fault starts at: %.4f\n" % float(faultinfo[3]))
+		logfile.write("   Fault is cleared at: %.4f\n" % float(faultinfo[4]))
+		logfile.write("   Fault resistance R (pu, system base): %.5f\n" % float(faultinfo[1]))
+		logfile.write("   Fault resistance X (pu, system base): %.5f\n" % float(faultinfo[2]))
+	else:
+		logfile.write("No event was added...\n")
 	# ----- Writing information about CPU consumption:
 	logfile.write("Process Terminated\n")
 	logfile.write("   Execution time for reading RAW file          : %.6f\n" % float(times[0]))
