@@ -38,9 +38,6 @@ def donothing():
     filewin = Toplevel(root)
     button = Button(filewin, text="Do nothing button")
     button.pack()
-def debug():
-    print(srcdir)
-    print(auxdir)
 def frompsse(rawfile,dyrfile,encode_flag,userpath):
     # ----- RAW file reader:
     #rawfile = directory_functions.askRawfile() 
@@ -109,12 +106,72 @@ def menu_from_psse():
 	    txt3.insert (0,userpath)
 	btn3 = Button(window, text="Find", command=usrpath)
 	btn3.grid(column=2, row=4)
+	# ----- Add event to system:
+	addevent = Label(window, text="Add fault event:")
+	addevent.grid(column=0,row=5)
+	fault_flag = IntVar()
+	def add_fault():
+		fault_info = []
+		if fault_flag.get() == 0:
+			fault_window = Toplevel()
+			fault_window.title("Fault Event Settings")
+			fault_window.geometry('300x200')
+			# ----- Bus number:
+			FaultBus = Label(fault_window, text="Fault bus number:")
+			FaultBus.grid(column=0, row=0)
+			BusNmbrTxt = Entry(fault_window,width=15)
+			BusNmbrTxt.grid(column=1, row=0)
+			# ----- R and X:
+			FaultR = Label(fault_window, text="R (pu, system's base):")
+			FaultR.grid(column=0, row=1)
+			FaultRTxt = Entry(fault_window,width=15)
+			FaultRTxt.grid(column=1, row=1)
+			FaultX = Label(fault_window, text="X (pu, system's base):")
+			FaultX.grid(column=0, row=2)
+			FaultXTxt = Entry(fault_window,width=15)
+			FaultXTxt.grid(column=1, row=2)
+			# ----- initial and end times:
+			FaultTs = Label(fault_window, text="Fault time (s):")
+			FaultTs.grid(column=0, row=3)
+			FaultTsTxt = Entry(fault_window,width=15)
+			FaultTsTxt.grid(column=1, row=3)
+			FaultTe = Label(fault_window, text="Clearing time (s):")
+			FaultTe.grid(column=0, row=4)
+			FaultTeTxt = Entry(fault_window,width=15)
+			FaultTeTxt.grid(column=1, row=4)
+			# ----- assembling array:
+			def getFaultInfo():
+				# ----- get data:
+				try:
+					busn = int(BusNmbrTxt.get())
+				except:
+					print('Invalid input. Please enter an integer as a bus number.')
+				try:
+					r = float(FaultRTxt.get())
+					x = float(FaultXTxt.get())
+				except:
+					print('Invalid input. Please enter R and X as real numbers.')
+				try:
+					ts = float(FaultTsTxt.get())
+					te = float(FaultTeTxt.get())
+				except:
+					print('Invalid input. Please enter time instants as real numbers.')
+				# ----- create data vector
+				fault_info = [busn,r,x,ts,te]
+				fault_window.destroy()
+			# ----- closing window button:
+			closebtn = Button(fault_window, text="Add Event", command=getFaultInfo)
+			closebtn.grid(column=1,row=5)
+		else:
+			fault_info = [0,0,0,0,0]
+	opt1 = Radiobutton(window, text='yes', variable=fault_flag, value=0, command=add_fault).grid(column=1, row=5)
+	opt2 = Radiobutton(window, text='no', variable=fault_flag, value=1, command=add_fault).grid(column=1, row=6)
 	# ----- Translation start button:
 	def startTranslation():
 		frompsse(txt1.get(),txt2.get(),var.get(),txt3.get())
 		window.destroy()
 	strtbtn = Button(window, text="Start Translation", command=startTranslation)
-	strtbtn.grid(column=1, row=5)
+	strtbtn.grid(column=1, row=7)
     
 #==================================================================================
 # Code Part: Graphical User Interface   
@@ -155,7 +212,6 @@ compmenu.add_command(label="Compare folders of files",command = donothing)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.quit)
 helpmenu = Menu(menubar, tearoff=0)
-helpmenu.add_command(label="Debug Function", command=debug)
 helpmenu.add_command(label="Help Index", command=donothing)
 helpmenu.add_command(label="About...", command=donothing)
 menubar.add_cascade(label="Help", menu=helpmenu)
