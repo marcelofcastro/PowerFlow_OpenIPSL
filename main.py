@@ -93,7 +93,7 @@ def menu_from_psse():
 	config.grid(column=0, row=2)
 	var = IntVar()
 	def printvar():
-		print(var.get())
+		var.get()
 	rad1 = Radiobutton(window, text='utf-8', variable=var, value=0, command=printvar).grid(column=1, row=2)
 	rad2 = Radiobutton(window, text='latin1', variable=var, value=1, command=printvar).grid(column=1, row=3)
 	# ----- Translation destination:
@@ -110,10 +110,15 @@ def menu_from_psse():
 	addevent = Label(window, text="Add fault event:")
 	addevent.grid(column=0,row=5)
 	fault_flag = IntVar()
+	busn = IntVar()
+	r = DoubleVar()
+	x = DoubleVar()
+	te = DoubleVar()
+	ts = DoubleVar()
+	fault_info = []
 	def add_fault():
-		fault_info = []
 		if fault_flag.get() == 1:
-			fault_window = Toplevel()
+			fault_window = Toplevel(window)
 			fault_window.title("Fault Event Settings")
 			fault_window.geometry('300x200')
 			# ----- Bus number:
@@ -143,31 +148,37 @@ def menu_from_psse():
 			def getFaultInfo():
 				# ----- get data:
 				try:
-					busn = int(BusNmbrTxt.get())
+					busn.set(int(BusNmbrTxt.get()))
 				except:
 					print('Invalid input. Please enter an integer as a bus number.')
 				try:
-					r = float(FaultRTxt.get())
-					x = float(FaultXTxt.get())
+					r.set(float(FaultRTxt.get()))
+					x.set(float(FaultXTxt.get()))
 				except:
 					print('Invalid input. Please enter R and X as real numbers.')
 				try:
-					ts = float(FaultTsTxt.get())
-					te = float(FaultTeTxt.get())
+					ts.set(float(FaultTsTxt.get()))
+					te.set(float(FaultTeTxt.get()))
 				except:
 					print('Invalid input. Please enter time instants as real numbers.')
 				# ----- create data vector
-				fault_info = [busn,r,x,ts,te]
 				fault_window.destroy()
 			# ----- closing window button:
 			closebtn = Button(fault_window, text="Add Event", command=getFaultInfo)
 			closebtn.grid(column=1,row=5)
 		else:
-			fault_info = [0,0,0,0,0]
+			# ----- Set zero to every value:
+			busn.set(0)
+			r.set(0)
+			x.set(0)
+			ts.set(0)
+			te.set(0)
+	# ----- buttons
 	opt1 = Radiobutton(window, text='yes', variable=fault_flag, value=1, command=add_fault).grid(column=1, row=5)
 	opt2 = Radiobutton(window, text='no', variable=fault_flag, value=0, command=add_fault).grid(column=1, row=6)
 	# ----- Translation start button:
 	def startTranslation():
+		fault_info = [int(busn.get()),float(r.get()),float(x.get()),float(ts.get()),float(te.get())]
 		frompsse(txt1.get(),txt2.get(),var.get(),txt3.get(),fault_flag.get(),fault_info)
 		window.destroy()
 	strtbtn = Button(window, text="Start Translation", command=startTranslation)

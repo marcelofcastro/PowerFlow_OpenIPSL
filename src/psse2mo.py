@@ -115,7 +115,7 @@ def lookFor(modeltype,bus,circuit,dyrdata):
 # Authors: marcelofcastro        
 # Description: It writes the files needed for system package and the network file.
 #=========================================================================================
-def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base):
+def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base,fault_flag,faultinfo):
 	# ----- Extracting information from system
 	try:
 		buses = sysdata['bus'] # getting bus data 
@@ -213,6 +213,12 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 			system_file.write("  System.Generators.Gen%d_%d gen%d_%d (V_b = flowdata.voltages.BaseVoltage%d, v_0 = flowdata.voltages.V%d, angle_0 = flowdata.voltages.A%d, P_0 = flowdata.powers.P%d_%d, Q_0 = flowdata.powers.Q%d_%d); \n" % ((ii+1),bn,(ii+1),bn,bn,bn,bn,(ii+1),bn,(ii+1),bn))
 	else:
 		system_file.write("// system has no generator\n")
+	# Listing events if any:
+	if fault_flag == 1:
+		system_file.write("// -- Fault Event:\n")
+		system_file.write("  OpenIPSL.Electrical.Events.PwFault Fault (R=%.6f, X=%.6f, t1 = %.6f, t2 = %.6f); \n" % (float(faultinfo[1]),float(faultinfo[2]),float(faultinfo[3]),float(faultinfo[4])))
+	else:
+		system_file.write("// system has no event\n")
 	# Starting EQUATION section (connections):
 	system_file.write("equation\n")
 	# Starting CONNECTION OF BRANCHES:
@@ -254,6 +260,12 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 			system_file.write("  connect(gen%d_%d.pin,bus_%d.p); \n" % ((ii+1),int(gens.iloc[ii,0]),int(gens.iloc[ii,0])))
 	else:
 		system_file.write("// No generator to connect.\n")
+	# Connecting fault:
+	if fault_flag == 1:
+		system_file.write("// -- Connect fault event:\n")
+		system_file.write("  connect(Fault.p,bus_%d.p); \n" % int(faultinfo[0]))
+	else:
+		system_file.write("// No fault to be connected.\n")
 	# Closing file modelica file:
 	system_file.write("end %s;" % (str(networkname)))
 	system_file.close()
@@ -779,7 +791,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   T_E = %.4f,\n" % float(eslist.iloc[row,5]))
 		file.write("   E_MIN = %.4f,\n" % float(eslist.iloc[row,6]))
 		file.write("   E_MAX = %.4f,\n" % float(eslist.iloc[row,7]))
-		file.write("   SITCH = %s,\n" % sw)
+		file.write("   SWITCH = %s,\n" % sw)
 		file.write("   r_cr_fd = %.4f)\n" % float(eslist.iloc[row,9]))
 	elif model == 'SEXS':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
@@ -1463,7 +1475,7 @@ def writeGenMo(gdir,pkg_name,pkg_ordr,sysdata,dyrdata):
 # Authors: marcelofcastro       
 # Description: It uses the data from readRaw and readDyr to build the system in Modelica.
 #=========================================================================================
-def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata):
+def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata,fault_flag,faultinfo):
 	# ----- Initializing file name:
 	networkname = "power_grid" # name of the network
 	pkg_name = "package.mo" # package name (modelica standard)
@@ -1510,8 +1522,8 @@ def writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,time
 		logfile.write("   Fault on Bus: %d\n" % int(faultinfo[0]))
 		logfile.write("   Fault starts at: %.4f\n" % float(faultinfo[3]))
 		logfile.write("   Fault is cleared at: %.4f\n" % float(faultinfo[4]))
-		logfile.write("   Fault resistance R (pu, system base): %.5f\n" % float(faultinfo[1]))
-		logfile.write("   Fault resistance X (pu, system base): %.5f\n" % float(faultinfo[2]))
+		logfile.write("   Fault resistance R (pu, system base): %.6f\n" % float(faultinfo[1]))
+		logfile.write("   Fault resistance X (pu, system base): %.6f\n" % float(faultinfo[2]))
 	else:
 		logfile.write("No event was added...\n")
 	# ----- Writing information about CPU consumption:
