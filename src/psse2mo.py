@@ -780,7 +780,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   K_E = %.4f,\n" % float(eslist.iloc[row,9]))
 		file.write("   T_E = %.4f,\n" % float(eslist.iloc[row,10]))
 		file.write("   K_F = %.4f,\n" % float(eslist.iloc[row,11]))
-		file.write("   T_F1 = %.4f,\n" % float(eslist.iloc[row,12]))
+		file.write("   T_F = %.4f,\n" % float(eslist.iloc[row,12]))
 		file.write("   E_1 = %.4f,\n" % float(eslist.iloc[row,14]))
 		file.write("   S_EE_1 = %.4f,\n" % float(eslist.iloc[row,15]))
 		file.write("   E_2 = %.4f,\n" % float(eslist.iloc[row,16]))
@@ -1031,6 +1031,16 @@ def writePss(dyrdata,result,file):
 		file.write("   V_S2MIN = %.4f,\n" % float(stlist.iloc[row,22]))
 		file.write("   V_STMAX = %.4f,\n" % float(stlist.iloc[row,23]))
 		file.write("   V_STMIN = %.4f)\n" % float(stlist.iloc[row,24]))
+	elif model == 'STAB2A':
+		file.write("  OpenIPSL.Electrical.Controls.PSSE.PSS.STAB2A pss(\n")
+		file.write("   K_2 = %.4f,\n" % float(stlist.iloc[row,2]))
+		file.write("   T_2 = %.4f,\n" % float(stlist.iloc[row,3]))
+		file.write("   K_3 = %.4f,\n" % float(stlist.iloc[row,4]))
+		file.write("   T_3 = %.4f,\n" % float(stlist.iloc[row,5]))
+		file.write("   K_4 = %.4f,\n" % float(stlist.iloc[row,6]))
+		file.write("   K_5 = %.4f,\n" % float(stlist.iloc[row,7]))
+		file.write("   T_5 = %.4f,\n" % float(stlist.iloc[row,8]))
+		file.write("   H_LIM = %.4f)\n" % float(stlist.iloc[row,9]))
 	# place pss:
 	file.write("  annotation(Placement(transformation(extent = {{-70, -10}, {-50, 10}})));\n")
 #=========================================================================================      
@@ -1048,6 +1058,7 @@ def connectPss(dyrdata,result,file):
 	# ----- List of stabilizers with similar structure:
 	pss2_list = ['PSS2A','PSS2B']
 	ieeest_list = ['IEEEST']
+	single_list = ['STAB2A']
 	# ----- Test if we have exciter:
 	if model == 'None':
 		file.write("  connect(machine.PELEC, pss.V_S2) annotation (Line(points={{41,3},{54,3},{54,66},{-84,66},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
@@ -1097,6 +1108,8 @@ def connectPss(dyrdata,result,file):
 			file.write("  connect(machine.ETERM, pss.V_S) annotation (Line(points={{41,-3},{54,-3},{54,70},{-84,70},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
 		else: # go to rotor speed deviation:
 			file.write("  connect(machine.SPEED, pss.V_S) annotation (Line(points={{41,7},{46,7},{46,50},{-84,50},{-84,-4},{-71,-4}}, color={0,0,127}));\n")
+	elif model in single_list:
+		file.write("  connect(pss.PELEC, machine.PELEC) annotation (Line(points={{-72,0},{-80,0},{-80,68},{54,68},{54,3},{41,3}}, color={0,0,127}));\n")
 #=========================================================================================      
 # Function: writeGov
 # Authors: marcelofcastro        
