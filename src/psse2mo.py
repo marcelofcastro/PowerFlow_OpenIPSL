@@ -115,7 +115,7 @@ def lookFor(modeltype,bus,circuit,dyrdata):
 # Authors: marcelofcastro        
 # Description: It writes the files needed for system package and the network file.
 #=========================================================================================
-def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base,fault_flag,faultinfo):
+def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequency,system_base,fault_flag,faultinfo):
 	# ----- Extracting information from system
 	try:
 		buses = sysdata['bus'] # getting bus data 
@@ -210,7 +210,12 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	if len(gens) != 0:
 		for ii in range(len(gens)):
 			bn = gens.iloc[ii,0]
-			system_file.write("  System.Generators.Gen%d_%d gen%d_%d (V_b = flowdata.voltages.BaseVoltage%d, v_0 = flowdata.voltages.V%d, angle_0 = flowdata.voltages.A%d, P_0 = flowdata.powers.P%d_%d, Q_0 = flowdata.powers.Q%d_%d); \n" % ((ii+1),bn,(ii+1),bn,bn,bn,bn,(ii+1),bn,(ii+1),bn))
+			# Check if machine is declared in DYR
+			macresult = lookFor('machine',bn,gens.iloc[ii,8],dyrdata)
+			# Test
+			if macresult[0] != 'None':
+				# Write machine in .order file
+				system_file.write("  System.Generators.Gen%d_%d gen%d_%d (V_b = flowdata.voltages.BaseVoltage%d, v_0 = flowdata.voltages.V%d, angle_0 = flowdata.voltages.A%d, P_0 = flowdata.powers.P%d_%d, Q_0 = flowdata.powers.Q%d_%d); \n" % ((ii+1),bn,(ii+1),bn,bn,bn,bn,(ii+1),bn,(ii+1),bn))
 	else:
 		system_file.write("// system has no generator\n")
 	# Listing events if any:
@@ -257,7 +262,12 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,syste
 	if len(gens) != 0:
 		system_file.write("// -- Connecting generation units:\n")
 		for ii in range(len(gens)):
-			system_file.write("  connect(gen%d_%d.pin,bus_%d.p); \n" % ((ii+1),int(gens.iloc[ii,0]),int(gens.iloc[ii,0])))
+			# Check if machine is declared in DYR
+			macresult = lookFor('machine',gens.iloc[ii,0],gens.iloc[ii,8],dyrdata)
+			# Test
+			if macresult[0] != 'None':
+				# Write machine in .order file
+				system_file.write("  connect(gen%d_%d.pin,bus_%d.p); \n" % ((ii+1),int(gens.iloc[ii,0]),int(gens.iloc[ii,0])))
 	else:
 		system_file.write("// No generator to connect.\n")
 	# Connecting fault:
@@ -791,7 +801,7 @@ def writeExc(dyrdata,result,file):
 		file.write("   T_E = %.4f,\n" % float(eslist.iloc[row,5]))
 		file.write("   E_MIN = %.4f,\n" % float(eslist.iloc[row,6]))
 		file.write("   E_MAX = %.4f,\n" % float(eslist.iloc[row,7]))
-		file.write("   SWITCH = %s,\n" % sw)
+		file.write("   C_SWITCH = %s,\n" % sw)
 		file.write("   r_cr_fd = %.4f)\n" % float(eslist.iloc[row,9]))
 	elif model == 'SEXS':
 		file.write("  Modelica.Blocks.Sources.Constant uel(k=0) annotation(Placement(transformation(extent={{-40,-62},{-20,-42}})));\n")
@@ -1481,7 +1491,7 @@ def writeMo(wdir,sdir,ddir,gdir,system_base,system_frequency,sysdata,dyrdata,fau
 	pkg_name = "package.mo" # package name (modelica standard)
 	pkg_ordr = "package.order" # package order name (modelica standard)
 	# ----- Writing System Package:
-	writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,system_frequency,system_base,fault_flag,faultinfo)
+	writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequency,system_base,fault_flag,faultinfo)
 	# ----- Writing System Data Package:
 	writeDataMo(ddir,pkg_name,pkg_ordr,sysdata)
 	# ----- Writing Generator Data:
