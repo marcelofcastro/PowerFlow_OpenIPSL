@@ -161,13 +161,14 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequen
 	system_file.write("within System;\n")
 	system_file.write("model %s\n" % (str(networkname)))
 	system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0f, fn = %.2f) annotation (Placement(transformation(extent={{-94,80},{-60,100}})));\n" % (float(system_base)*1000000,float(system_frequency)))
-	system_file.write("  inner System.Data.pfdata flowdata  annotation (Placement(transformation(extent={{-88,60},{-68,80}})));\n")
+	system_file.write("  inner System.Data.Power_Flow pf (redeclare record PowerFlow = System.PF_Data.PF_00000) annotation(Placement(transformation(extent={{-88,60},{-68,80}})));\n")
 	# LISTING BUSES in the modelica file:
 	system_file.write("// -- Buses:\n")
 	if len(buses) != 0:
 		for ii in range(len(buses)):
 			bn = int(buses.iloc[ii,0])
-			system_file.write("  OpenIPSL.Electrical.Buses.Bus bus_%d (V_b = flowdata.voltages.BaseVoltage%d, v_0 = flowdata.voltages.V%d, angle_0 = flowdata.voltages.A%d); \n" % (bn,bn,bn,bn))
+			vb = float(buses.iloc[ii,2])*1000
+			system_file.write("  OpenIPSL.Electrical.Buses.Bus bus_%d (V_b = %.0f, v_0 = pf.powerflow.bus.V%d, angle_0 = pf.powerflow.bus.A%d); \n" % (bn,vb,bn,bn))
 	else:
 		system_file.write("// system has no bus\n")
 	# LISTING BRANCHES in the modelica file:
@@ -181,7 +182,8 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequen
 	system_file.write("// -- Transformers:\n")
 	if len(transf) != 0:
 		for ii in range(len(transf)):
-			system_file.write("  OpenIPSL.Electrical.Branches.PSSE.TwoWindingTransformer twTransformer%d (R = %.4f, X = %.4f, G = 0.0, B = 0.0, t1 = %.6f, t2 = %.6f ); \n" % ((ii+1),float(transf.iloc[ii,2]),float(transf.iloc[ii,3]),float(transf.iloc[ii,12]),float(transf.iloc[ii,13])))
+			ix = ii+1
+			system_file.write("  OpenIPSL.Electrical.Branches.PSSE.TwoWindingTransformer twTransformer%d (R = %.4f, X = %.4f, G = 0.0, B = 0.0, t1 = pf.powerflow.trafos.t1_trafo_%d, t2 = pf.powerflow.trafos.t2_trafo_%d); \n" % (ix,float(transf.iloc[ii,2]),float(transf.iloc[ii,3]),ix,ix))
 	else:
 		system_file.write("// system has no transformer\n")
 	# LISTING LOADS in modelica file:
@@ -189,9 +191,8 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequen
 	if len(loads) != 0:
 		for ii in range(len(loads)):
 			bn = int(loads.iloc[ii,0])
-			P = float(loads.iloc[ii,1])*1000000
-			Q = float(loads.iloc[ii,2])*1000000
-			system_file.write("  OpenIPSL.Electrical.Loads.PSSE.Load load%d_bus%d (V_b = flowdata.voltages.BaseVoltage%d, v_0 = flowdata.voltages.V%d, angle_0 = flowdata.voltages.A%d, P_0 = %.1f, Q_0 = %.1f, PQBRAK=0.7, characteristic=2); \n" % ((ii+1),bn,bn,bn,bn,P,Q))
+			ix = ii+1
+			system_file.write("  OpenIPSL.Electrical.Loads.PSSE.Load load%d_bus%d (V_b = bus_%d.V_b, v_0 = pf.powerflow.bus.V%d, angle_0 = pf.powerflow.bus.A%d, P_0 = pf.powerflow.loads.PL%d, Q_0 = pf.powerflow.loads.QL%d, PQBRAK=0.7, characteristic=2); \n" % ((ii+1),bn,bn,bn,bn,ix,ix))
 	else:
 		system_file.write("// system has no load\n")
 	# LISTING SHUNT in modelica file:
@@ -215,7 +216,8 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequen
 			# Test
 			if macresult[0] != 'None':
 				# Write machine in .order file
-				system_file.write("  System.Generators.Gen%d_%d gen%d_%d (V_b = flowdata.voltages.BaseVoltage%d, v_0 = flowdata.voltages.V%d, angle_0 = flowdata.voltages.A%d, P_0 = flowdata.powers.P%d_%d, Q_0 = flowdata.powers.Q%d_%d); \n" % ((ii+1),bn,(ii+1),bn,bn,bn,bn,(ii+1),bn,(ii+1),bn))
+				ix = ii+1
+				system_file.write("  System.Generators.Gen%d_%d gen%d_%d (V_b = bus_%d.V_b, v_0 = pf.powerflow.bus.V%d, angle_0 = pf.powerflow.bus.A%d, P_0 = pf.powerflow.machines.PG%d, Q_0 = pf.powerflow.machines.QG%d); \n" % (ix,bn,ix,bn,bn,bn,bn,ix,ix))
 	else:
 		system_file.write("// system has no generator\n")
 	# Listing events if any:
@@ -286,55 +288,257 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequen
 #=========================================================================================
 def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 	# ----- Extracting information from system
-	buses = sysdata['bus'] # getting bus data 
-	gens = sysdata['gen'] # getting generator data
+	# buses
+	try:
+		buses = sysdata['bus'] # getting bus data 
+	except:
+		buses = []
+	# loads
+	try:
+		loads = sysdata['load'] # getting load data
+	except:
+		loads = []
+	# machines
+	try:
+		gens = sysdata['gen'] # getting generator data
+	except:
+		gens = []
+	# transformers
+	try:
+		transf = sysdata['transformer'] # getting transformer data
+	except:
+		transf = []
+	#
 	# ----- Changing directory to system data directory:
 	os.chdir(ddir)
 	# ----- Creating data package .mo file:
 	packagemo = open(pkg_name,"w+")
 	packagemo.write("within System;\n")
-	packagemo.write("package Data \"Modelica records for power flow data.\" \n\n")
-	packagemo.write("end Data;")
+	packagemo.write("package PF_Data \"Modelica records for power flow data.\" \n\n")
+	packagemo.write("end PF_Data;")
 	packagemo.close()
 	# ----- Creating data package .order file:
 	packageorder = open(pkg_ordr,"w+")
-	packageorder.write("pfdata\n")
-	packageorder.write("voltage_data\n")
-	packageorder.write("power_data")
+	packageorder.write("Power_Flow\n")
+	packageorder.write("Power_Flow_Template\n")
+	packageorder.write("Bus_Data\n")
+	packageorder.write("Loads_Data\n")
+	packageorder.write("Trafos_Data\n")
+	packageorder.write("Machines_Data\n")
+	packageorder.write("PF_00000\n")
 	packageorder.close()
-	# ----- Writing pfdata .mo file:
-	pfdatamo = open("pfdata.mo","w+")
-	pfdatamo.write("within System.Data;\n")
-	pfdatamo.write("record pfdata \" Translated and calculated power flow data.\"\n")
+	# ----- Writing Power Flow Template .mo file:
+	pftdatamo = open("Power_Flow_Template.mo","w+")
+	pftdatamo.write("within System.PF_Data;\n")
+	pftdatamo.write("record Power_Flow_Template \"Template for power flow\"\n")
+	pftdatamo.write("  extends Modelica.Icons.Record;\n")
+	pftdatamo.write("end Power_Flow_Template;")
+	pftdatamo.close()
+	# ----- Writing Power Flow .mo file:
+	pfdatamo = open("Power_Flow.mo","w+")
+	pfdatamo.write("within System.PF_Data;\n")
+	pfdatamo.write("record Power_Flow \" Translated and calculated power flow data.\"\n")
 	pfdatamo.write("  extends Modelica.Icons.Record;\n")
-	pfdatamo.write("  replaceable record Voltages = voltage_data constrainedby voltage_data annotation (choicesAllMatching);\n")
-	pfdatamo.write("  Voltages voltages;\n")
-	pfdatamo.write("  replaceable record Powers = power_data constrainedby power_data annotation (choicesAllMatching);\n")
-	pfdatamo.write("  Powers powers;\n")
-	pfdatamo.write("end pfdata;")
+	pfdatamo.write("  replaceable record PowerFlow = System.PF_Data.Power_Flow_Template constrainedby System.PF_Data.Power_Flow_Template annotation (choicesAllMatching);\n")
+	pfdatamo.write("  PowerFlow powerflow;\n")
+	pfdatamo.write("end Power_Flow ;")
 	pfdatamo.close()
-	# ----- Writing voltage record:
-	vdatamo = open("voltage_data.mo","w+")
-	vdatamo.write("within System.Data;\n")
-	vdatamo.write("record voltage_data\n")
-	vdatamo.write("  extends Modelica.Icons.Record;\n")
+	# ----- Writing PF Record:
+	pfmo = open("PF_00000.mo","w+")
+	pfmo.write("within System.PF_Data;\n")
+	pfmo.write("record PF_00000\n")
+	pfmo.write("  extends System.PF_Data.Power_Flow_Template;\n\n")
+	pfmo.write("  replaceable record Bus = System.PF_Data.Bus_Data.PF_Bus_00000 \"Bus power flow result\"\n")
+	pfmo.write("  constrainedby System.PF_Data.Bus_Data.Bus_Template;\n")
+	pfmo.write("  Bus bus;\n\n")
+	pfmo.write("  replaceable record Loads = System.PF_Data.Loads_Data.PF_Loads_00000 \"Loads power flow result\"\n")
+	pfmo.write("  constrainedby System.PF_Data.Loads_Data.Loads_Template;\n")
+	pfmo.write("  Loads loads;\n\n")
+	pfmo.write("  replaceable record Machines = System.PF_Data.Machines_Data.PF_Machines_00000 \"Machines power flow result\"\n")
+	pfmo.write("  constrainedby System.PF_Data.Machines_Data.Machines_Template;\n")
+	pfmo.write("  Machines machines;\n\n")
+	pfmo.write("  replaceable record Trafos = System.PF_Data.Trafos_Data.PF_Trafos_00000 \"Trafos power flow result\"\n")
+	pfmo.write("  constrainedby System.PF_Data.Trafos_Data.Trafos_Template;\n")
+	pfmo.write("  Trafos trafos;\n\n")
+	pfmo.write("end PF_00000;")
+	pfmo.close()
+	#
+	# ----- Changing directory to bus data directory:
+	busdir = ddir + "/Bus_Data" # name of bus data
+	os.chdir(busdir) # change to bus directory
+	# ----- Create package.mo
+	packagemo = open(pkg_name,"w+")
+	packagemo.write("within System.PF_Data;\n")
+	packagemo.write("package Bus_Data \"Record for buses power flow data.\" \n\n")
+	packagemo.write("end Bus_Data;")
+	packagemo.close()
+	# ----- Creating data package .order file:
+	packageorder = open(pkg_ordr,"w+")
+	packageorder.write("Bus_Template\n")
+	packageorder.write("PF_Bus_00000\n")
+	packageorder.close()
+	# ----- Writing bus template:
+	bustemplate = open("Bus_Template.mo","w+")
+	bustemplate.write("within System.PF_Data.Bus_Data;\n")
+	bustemplate.write("partial record Bus_Template\n")
 	for ii in range(len(buses)):
-		vdatamo.write("  //Bus %d - %s \n" % (int(buses.iloc[ii,0]),buses.iloc[ii,1]))
-		vdatamo.write("  parameter Real BaseVoltage%d = %.0f;\n" % (int(buses.iloc[ii,0]),float(buses.iloc[ii,2])*1000))# base voltage
-		vdatamo.write("  parameter Real V%d = %.4f;\n" % (int(buses.iloc[ii,0]), float(buses.iloc[ii,4])))# voltage in pu
+		bustemplate.write("  //Bus %d - %s \n" % (int(buses.iloc[ii,0]),buses.iloc[ii,1]))
+		bustemplate.write("  parameter OpenIPSL.Types.PerUnit V%d;\n" % (int(buses.iloc[ii,0])))
+		bustemplate.write("  parameter OpenIPSL.Types.Angle A%d;\n\n" % (int(buses.iloc[ii,0])))
+	bustemplate.write("end Bus_Template;")
+	# ----- Writing bus data:
+	busdata = open("PF_Bus_00000.mo","w+")
+	busdata.write("within System.PF_Data.Bus_Data;\n")
+	busdata.write("record PF_Bus_00000\n")
+	busdata.write("  extends System.PF_Data.Bus_Data.Bus_Template(\n")
+	for ii in range(len(buses)):
+		busdata.write("  //Bus %d - %s \n" % (int(buses.iloc[ii,0]),buses.iloc[ii,1]))
+		busdata.write("  V%d = %.6f;\n" % (int(buses.iloc[ii,0]), float(buses.iloc[ii,4])))
 		angle = float(buses.iloc[ii,5])*math.pi/180 # angle is declared in radians
-		vdatamo.write("  parameter Real A%d = %.4f;\n" % (int(buses.iloc[ii,0]), angle)) # angle in record
-	vdatamo.write("end voltage_data;")
-	# ----- Writing power record:
-	pdatamo = open("power_data.mo","w+")
-	pdatamo.write("within System.Data;\n")
-	pdatamo.write("record power_data\n")
-	pdatamo.write("  extends Modelica.Icons.Record;\n")
-	for ii in range(len(gens)):
-		pdatamo.write("  //Generator in Bus %d\n" % (int(gens.iloc[ii,0])))
-		pdatamo.write("  parameter Real P%d_%d = %.0f;\n" % ((ii+1),int(gens.iloc[ii,0]), float(gens.iloc[ii,2])*1000000))# P in MW
-		pdatamo.write("  parameter Real Q%d_%d = %.0f;\n" % ((ii+1),int(gens.iloc[ii,0]), float(gens.iloc[ii,4])*1000000)) # Q in Mvar
-	pdatamo.write("end power_data;")
+		busdata.write("  A%d = %.6f;\n\n" % (int(buses.iloc[ii,0]), angle)) # angle in record
+	busdata.write(");\n")
+	busdata.write("end PF_Bus_00000;")
+	#
+	# ----- Changing directory to load data directory:
+	loadsdir = ddir + "/Loads_Data" # name of loads data
+	os.chdir(loadsdir) # change to loads directory
+    # ----- Create package.mo
+	packagemo = open(pkg_name,"w+")
+	packagemo.write("within System.PF_Data;\n")
+	packagemo.write("package Loads_Data \"Record for loads power flow data.\" \n\n")
+	packagemo.write("end Loads_Data;")
+	packagemo.close()
+	# ----- Creating data package .order file:
+	packageorder = open(pkg_ordr,"w+")
+	packageorder.write("Loads_Template\n")
+	packageorder.write("PF_Loads_00000\n")
+	packageorder.close()
+	# ----- Writing loads template:
+	loadtemplate = open("Loads_Template.mo","w+")
+	loadtemplate.write("within System.PF_Data.Loads_Data;\n")
+	loadtemplate.write("partial record Loads_Template\n")
+	if len(loads) != 0:
+		for ii in range(len(loads)):
+			ix = ii+1
+			bn = int(loads.iloc[ii,0])
+			loadtemplate.write("  //Load in bus %d: \n" % (bn))
+			loadtemplate.write("  parameter OpenIPSL.Types.ActivePower PL%d;\n" % (ix))
+			loadtemplate.write("  parameter OpenIPSL.Types.ReactivePower QL%d;\n\n" % (ix))
+	else:
+		loadtemplate.write("  //system has no load\n")
+	loadtemplate.write("end Loads_Template;")
+	# ----- Writing loads data:
+	loaddata = open("PF_Loads_00000.mo","w+")
+	loaddata.write("within System.PF_Data.Loads_Data;\n")
+	loaddata.write("record PF_Loads_00000\n")
+	loaddata.write("  extends System.PF_Data.Loads_Data.Loads_Template(\n")
+	if len(loads) != 0:
+		for ii in range(len(loads)):
+			ix = ii+1
+			bn = int(loads.iloc[ii,0]) # bus number
+			P = float(loads.iloc[ii,1])*1000000 # P in MW
+			Q = float(loads.iloc[ii,2])*1000000 # Q in Mvar
+			loaddata.write("  //Load %d, in bus %d: \n" % (ix,bn))
+			loaddata.write("  PL%d = %.1f;\n" % (ix,P))
+			loaddata.write("  QL%d = %.1f;\n\n" % (ix,Q))
+	else:
+		loaddata.write("  //system has no load\n")
+	loaddata.write(");\n")
+	loaddata.write("end PF_Loads_00000;")
+	#
+    # ----- Changing directory to machines data directory:
+	macdir = ddir + "/Machines_Data" # name of machines data
+	os.chdir(macdir) # change to machines directory
+    # ----- Create package.mo
+	packagemo = open(pkg_name,"w+")
+	packagemo.write("within System.PF_Data;\n")
+	packagemo.write("package Machines_Data \"Record for machines power flow data.\" \n\n")
+	packagemo.write("end Machines_Data;")
+	packagemo.close()
+	# ----- Creating data package .order file:
+	packageorder = open(pkg_ordr,"w+")
+	packageorder.write("Machines_Template\n")
+	packageorder.write("PF_Machines_00000\n")
+	packageorder.close()
+	# ----- Writing machines template:
+	mactemplate = open("Machines_Template.mo","w+")
+	mactemplate.write("within System.PF_Data.Machines_Data;\n")
+	mactemplate.write("partial record Machines_Template\n")
+	if len(gens) != 0:
+		for ii in range(len(gens)):
+			ix = ii+1
+			bn = int(gens.iloc[ii,0])
+			mactemplate.write("  //Machine in bus %d: \n" % (bn))
+			mactemplate.write("  parameter OpenIPSL.Types.ActivePower PG%d;\n" % (ix))
+			mactemplate.write("  parameter OpenIPSL.Types.ReactivePower QG%d;\n\n" % (ix))
+	else:
+		mactemplate.write("  //system has no machines\n")
+	mactemplate.write("end Machines_Template;")
+	# ----- Writing machines data:
+	macdata = open("PF_Machines_00000.mo","w+")
+	macdata.write("within System.PF_Data.Machines_Data;\n")
+	macdata.write("record PF_Machines_00000\n")
+	macdata.write("  extends System.PF_Data.Machines_Data.Machines_Template(\n")
+	if len(gens) != 0:
+		for ii in range(len(gens)):
+			ix = ii+1
+			bn = int(gens.iloc[ii,0]) # bus bumber
+			P = float(gens.iloc[ii,2])*1000000 # P in MW
+			Q = float(gens.iloc[ii,4])*1000000 # Q in Mvar
+			macdata.write("  //Machine %d, in bus %d: \n" % (ix,bn))
+			macdata.write("  PG%d = %.1f;\n" % (ix,P))
+			macdata.write("  QG%d = %.1f;\n\n" % (ix,Q))
+	else:
+		macdata.write("  //system has no machines\n")
+	macdata.write(");\n")
+	macdata.write("end PF_Machines_00000;")
+	#
+    # ----- Changing directory to transformer data directory:
+	trafodir = ddir + "/Trafos_Data" # name of transformers data
+	os.chdir(trafodir) # change to transformers directory
+    # ----- Create package.mo
+	packagemo = open(pkg_name,"w+")
+	packagemo.write("within System.PF_Data;\n")
+	packagemo.write("package Trafos_Data \"Record for transformers power flow data.\" \n\n")
+	packagemo.write("end Trafos_Data;")
+	packagemo.close()
+	# ----- Creating data package .order file:
+	packageorder = open(pkg_ordr,"w+")
+	packageorder.write("Trafos_Template\n")
+	packageorder.write("PF_Trafos_00000\n")
+	packageorder.close()
+	# ----- Writing machines template:
+	transftemplate = open("Trafos_Template.mo","w+")
+	transftemplate.write("within System.PF_Data.Trafos_Data;\n")
+	transftemplate.write("partial record Trafos_Template\n")
+	if len(transf) != 0:
+		for ii in range(len(transf)):
+			ix = ii+1
+			bf = int(transf.iloc[ii,0]) # bus from
+			bt = int(transf.iloc[ii,1]) # bus to
+			transftemplate.write("  //Transformer %d, from bus %d to bus %d: \n" % (ix,bf,bt))
+			transftemplate.write("  parameter Real t1_trafo_%d;\n" % (ix))
+			transftemplate.write("  parameter Real t2_trafo_%d;\n\n" % (ix))
+	else:
+		transftemplate.write("  //system has no transformer\n")
+	transftemplate.write("end Trafos_Template;")
+	# ----- Writing machines data:
+	transfdata = open("PF_Trafos_00000.mo","w+")
+	transfdata.write("within System.PF_Data.Trafos_Data;\n")
+	transfdata.write("record PF_Trafos_00000\n")
+	transfdata.write("  extends System.PF_Data.Trafos_Data.Trafos_Template(\n")
+	if len(transf) != 0:
+		for ii in range(len(transf)):
+			ix = ii+1
+			t1 = float(transf.iloc[ii,12])# t1 from transformer
+			t2 = float(transf.iloc[ii,13])# t2 from transformer
+			transfdata.write("  //Transformer %d: \n" % (ix))
+			transfdata.write("  t1_trafo_%d = %.6f;\n" % (ix,t1))
+			transfdata.write("  t2_trafo_%d = %.6f;\n\n" % (ix,t2))
+	else:
+		transfdata.write("  //system has no transformers\n")
+	transfdata.write(");\n")
+	transfdata.write("end PF_Trafos_00000;")
 #=========================================================================================      
 # Function: writeMac
 # Authors: marcelofcastro        
