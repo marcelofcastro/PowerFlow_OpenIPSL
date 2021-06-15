@@ -40,11 +40,11 @@ def createDir(userpath):
 	# ----- Getting paths and naming directories:
 	workingdirectory = userpath + "/Translation" # name of main folder
 	systemdirectory = userpath + "/Translation/System" # name of test system folder
-	sysdatadirectory = userpath + "/Translation/System/Data" # name of data folder
-	bdatadirectory = userpath + "/Translation/System/Data/Bus_Data" # name of bus data folder
-	ldatadirectory = userpath + "/Translation/System/Data/Loads_Data" # name of load data folder
-	mdatadirectory = userpath + "/Translation/System/Data/Machines_Data" # name of machines data folder
-	tdatadirectory = userpath + "/Translation/System/Data/Trafos_Data" # name of trafos data folder
+	sysdatadirectory = userpath + "/Translation/System/PF_Data" # name of data folder
+	bdatadirectory = userpath + "/Translation/System/PF_Data/Bus_Data" # name of bus data folder
+	ldatadirectory = userpath + "/Translation/System/PF_Data/Loads_Data" # name of load data folder
+	mdatadirectory = userpath + "/Translation/System/PF_Data/Machines_Data" # name of machines data folder
+	tdatadirectory = userpath + "/Translation/System/PF_Data/Trafos_Data" # name of trafos data folder
 	sysgensdirectory = userpath + "/Translation/System/Generators" # name of plant data folder
 	# ----- Creation of working directory called Translation:
 	try:

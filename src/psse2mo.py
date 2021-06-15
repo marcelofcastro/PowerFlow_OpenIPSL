@@ -154,14 +154,14 @@ def writeSysMo(sdir,pkg_name,pkg_ordr,networkname,sysdata,dyrdata,system_frequen
 	packageorder = open(pkg_ordr,"w+")
 	packageorder.write("%s\n" % (str(networkname)))
 	packageorder.write("Generators\n")
-	packageorder.write("Data")
+	packageorder.write("PF_Data")
 	packageorder.close()
 	# ----- Creating and writing system data into modelica system file:
 	system_file = open(networkname+".mo","w+")
 	system_file.write("within System;\n")
 	system_file.write("model %s\n" % (str(networkname)))
 	system_file.write("  inner OpenIPSL.Electrical.SystemBase SysData(S_b = %.0f, fn = %.2f) annotation (Placement(transformation(extent={{-94,80},{-60,100}})));\n" % (float(system_base)*1000000,float(system_frequency)))
-	system_file.write("  inner System.Data.Power_Flow pf (redeclare record PowerFlow = System.PF_Data.PF_00000) annotation(Placement(transformation(extent={{-88,60},{-68,80}})));\n")
+	system_file.write("  inner System.PF_Data.Power_Flow pf (redeclare record PowerFlow = System.PF_Data.PF_00000) annotation(Placement(transformation(extent={{-88,60},{-68,80}})));\n")
 	# LISTING BUSES in the modelica file:
 	system_file.write("// -- Buses:\n")
 	if len(buses) != 0:
@@ -384,7 +384,7 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 	for ii in range(len(buses)):
 		bustemplate.write("  //Bus %d - %s \n" % (int(buses.iloc[ii,0]),buses.iloc[ii,1]))
 		bustemplate.write("  parameter OpenIPSL.Types.PerUnit V%d;\n" % (int(buses.iloc[ii,0])))
-		bustemplate.write("  parameter OpenIPSL.Types.Angle A%d;\n\n" % (int(buses.iloc[ii,0])))
+		bustemplate.write("  parameter OpenIPSL.Types.Angle A%d;\n" % (int(buses.iloc[ii,0])))
 	bustemplate.write("end Bus_Template;")
 	# ----- Writing bus data:
 	busdata = open("PF_Bus_00000.mo","w+")
@@ -392,10 +392,14 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 	busdata.write("record PF_Bus_00000\n")
 	busdata.write("  extends System.PF_Data.Bus_Data.Bus_Template(\n")
 	for ii in range(len(buses)):
+		ix = ii+1
 		busdata.write("  //Bus %d - %s \n" % (int(buses.iloc[ii,0]),buses.iloc[ii,1]))
-		busdata.write("  V%d = %.6f;\n" % (int(buses.iloc[ii,0]), float(buses.iloc[ii,4])))
+		busdata.write("  V%d = %.6f,\n" % (int(buses.iloc[ii,0]), float(buses.iloc[ii,4])))
 		angle = float(buses.iloc[ii,5])*math.pi/180 # angle is declared in radians
-		busdata.write("  A%d = %.6f;\n\n" % (int(buses.iloc[ii,0]), angle)) # angle in record
+		if ix == len(buses):
+			busdata.write("  A%d = %.6f\n\n" % (int(buses.iloc[ii,0]), angle)) # last angle angle in record
+		else:
+			busdata.write("  A%d = %.6f,\n\n" % (int(buses.iloc[ii,0]), angle)) # angle in record
 	busdata.write(");\n")
 	busdata.write("end PF_Bus_00000;")
 	#
@@ -423,7 +427,7 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 			bn = int(loads.iloc[ii,0])
 			loadtemplate.write("  //Load in bus %d: \n" % (bn))
 			loadtemplate.write("  parameter OpenIPSL.Types.ActivePower PL%d;\n" % (ix))
-			loadtemplate.write("  parameter OpenIPSL.Types.ReactivePower QL%d;\n\n" % (ix))
+			loadtemplate.write("  parameter OpenIPSL.Types.ReactivePower QL%d;\n" % (ix))
 	else:
 		loadtemplate.write("  //system has no load\n")
 	loadtemplate.write("end Loads_Template;")
@@ -439,8 +443,11 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 			P = float(loads.iloc[ii,1])*1000000 # P in MW
 			Q = float(loads.iloc[ii,2])*1000000 # Q in Mvar
 			loaddata.write("  //Load %d, in bus %d: \n" % (ix,bn))
-			loaddata.write("  PL%d = %.1f;\n" % (ix,P))
-			loaddata.write("  QL%d = %.1f;\n\n" % (ix,Q))
+			loaddata.write("  PL%d = %.1f,\n" % (ix,P)) # load active power value
+			if ix == len(loads):
+				loaddata.write("  QL%d = %.1f\n" % (ix,Q)) # last load reactive power value in record
+			else:
+				loaddata.write("  QL%d = %.1f,\n" % (ix,Q)) # load reactive power value
 	else:
 		loaddata.write("  //system has no load\n")
 	loaddata.write(");\n")
@@ -470,7 +477,7 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 			bn = int(gens.iloc[ii,0])
 			mactemplate.write("  //Machine in bus %d: \n" % (bn))
 			mactemplate.write("  parameter OpenIPSL.Types.ActivePower PG%d;\n" % (ix))
-			mactemplate.write("  parameter OpenIPSL.Types.ReactivePower QG%d;\n\n" % (ix))
+			mactemplate.write("  parameter OpenIPSL.Types.ReactivePower QG%d;\n" % (ix))
 	else:
 		mactemplate.write("  //system has no machines\n")
 	mactemplate.write("end Machines_Template;")
@@ -486,8 +493,11 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 			P = float(gens.iloc[ii,2])*1000000 # P in MW
 			Q = float(gens.iloc[ii,4])*1000000 # Q in Mvar
 			macdata.write("  //Machine %d, in bus %d: \n" % (ix,bn))
-			macdata.write("  PG%d = %.1f;\n" % (ix,P))
-			macdata.write("  QG%d = %.1f;\n\n" % (ix,Q))
+			macdata.write("  PG%d = %.1f,\n" % (ix,P)) # machine active power value
+			if ix == len(gens):
+				macdata.write("  QG%d = %.1f\n" % (ix,Q)) # last machine reactive power value in record
+			else:
+				macdata.write("  QG%d = %.1f,\n" % (ix,Q)) # last machine reactive power value
 	else:
 		macdata.write("  //system has no machines\n")
 	macdata.write(");\n")
@@ -518,7 +528,7 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 			bt = int(transf.iloc[ii,1]) # bus to
 			transftemplate.write("  //Transformer %d, from bus %d to bus %d: \n" % (ix,bf,bt))
 			transftemplate.write("  parameter Real t1_trafo_%d;\n" % (ix))
-			transftemplate.write("  parameter Real t2_trafo_%d;\n\n" % (ix))
+			transftemplate.write("  parameter Real t2_trafo_%d;\n" % (ix))
 	else:
 		transftemplate.write("  //system has no transformer\n")
 	transftemplate.write("end Trafos_Template;")
@@ -533,8 +543,11 @@ def writeDataMo(ddir,pkg_name,pkg_ordr,sysdata):
 			t1 = float(transf.iloc[ii,12])# t1 from transformer
 			t2 = float(transf.iloc[ii,13])# t2 from transformer
 			transfdata.write("  //Transformer %d: \n" % (ix))
-			transfdata.write("  t1_trafo_%d = %.6f;\n" % (ix,t1))
-			transfdata.write("  t2_trafo_%d = %.6f;\n\n" % (ix,t2))
+			transfdata.write("  t1_trafo_%d = %.6f,\n" % (ix,t1)) # primary side tap value
+			if ix == len(transf):
+				transfdata.write("  t2_trafo_%d = %.6f\n" % (ix,t2)) # last secondary side tap value in record
+			else:
+				transfdata.write("  t2_trafo_%d = %.6f,\n" % (ix,t2)) # secondary side tap value
 	else:
 		transfdata.write("  //system has no transformers\n")
 	transfdata.write(");\n")
