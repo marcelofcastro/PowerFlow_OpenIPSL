@@ -565,6 +565,8 @@ def writeMac(genpdata,index,dyrdata,result,file):
 	genlist = dyrdata[model]
 	# ----- Extract Mb:
 	Mb = float(genpdata.iloc[index,9])*1000000
+	ra = float(genpdata.iloc[index,10])
+	xppd = float(genpdata.iloc[index,11])
 	# ----- Writing Parameters for models:
 	file.write("  // Writing machine:\n")
 	if model == 'GENCLS':
@@ -578,7 +580,9 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   v_0 = v_0,\n")
 		file.write("   angle_0 = angle_0,\n")
 		file.write("   omega(fixed = true))\n")
-	elif model == 'GENSAL':
+	elif model == 'GENSAL':		
+		if xppd != float(genlist.iloc[row,10]):
+			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENSAL machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
@@ -593,7 +597,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,12]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,13]))
 		file.write("   Xppq = %.4f,\n" % float(genlist.iloc[row,10])) # Xppq = Xppd
-		file.write("   R_a = 0,\n")
+		file.write("   R_a = %.4f,\n" % ra)
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
@@ -601,6 +605,8 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   v_0 = v_0,\n")
 		file.write("   angle_0 = angle_0)\n")
 	elif model == 'GENSAE':
+		if xppd != float(genlist.iloc[row,10]):
+			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENSAE machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
@@ -615,7 +621,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,12]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,13]))
 		file.write("   Xppq = %.4f,\n" % float(genlist.iloc[row,10]))
-		file.write("   R_a = 0,\n")
+		file.write("   R_a = %.4f,\n" % ra)
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
@@ -623,6 +629,8 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   v_0 = v_0,\n")
 		file.write("   angle_0 = angle_0)\n")
 	elif model == 'GENROU':
+		if xppd != float(genlist.iloc[row,12]):
+			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENROU machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
@@ -639,7 +647,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,14]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,15]))
 		file.write("   Xppq = %.4f,\n" % float(genlist.iloc[row,12]))
-		file.write("   R_a = 0,\n")
+		file.write("   R_a = %.4f,\n" % ra)
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
@@ -647,6 +655,8 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   v_0 = v_0,\n")
 		file.write("   angle_0 = angle_0)\n")
 	elif model == 'GENROE':
+		if xppd != float(genlist.iloc[row,12]):
+			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENROE machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
@@ -663,7 +673,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   S10 = %.4f,\n" % float(genlist.iloc[row,14]))
 		file.write("   S12 = %.4f,\n" % float(genlist.iloc[row,15]))
 		file.write("   Xppq = %.4f,\n" % float(genlist.iloc[row,12]))
-		file.write("   R_a = 0,\n")
+		file.write("   R_a = %.4f,\n" % ra)
 		file.write("   M_b = %.2f,\n" % Mb)
 		file.write("   V_b = V_b,\n")
 		file.write("   P_0 = P_0,\n")
