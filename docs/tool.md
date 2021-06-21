@@ -10,14 +10,23 @@ The Model Transformation Tool prototype work as a way of translating PSSE files 
 
 A RAW file will contain the information about the network being represented, its buses, lines, transformers, generation plants, loads and banks. A RAW file is supposed to contain all the information needed for a Power Flow (PF) calculation. The PF is the solution of a non-linear set of algebraic equations that finds an equilibrium of the system, where the total power being generated matches the power being consumed by all the devices in the grid plus the losses present in the system at a determined instant. This information is used in many different studies in the power system but here this information is used to create an equilibrium from which the dynamic system can start, so simulation starts appropriately whithout any undesired transient behavior.
 
+![Representation of a Simple RAW File](images/raw.png)
+
 The DYR file, on the other hand, contains information about the dynamic models being used to represent the devices used in each generation unit of the system. It is basically a list of models representing such devices, a set of integer numbers representing the bus to which that model is connected to and specifications related to connection of determined signals, and a set of real numbers that represnts the parameters used in each model.
 
+![Representation of a Simple DYR File](images/dyr.png)
 
-## Modelica Representation
+## The Translation
 
 Combining the information from these two files, it is possible to create a Modelica representation of the system, using the OpenIPSL. Of course, the representation will be limited by the model coverage from OpenIPSL. If the models from the PSSE file are available in OpenIPSL, the transformation tool can be successfully used. 
 
-The RAW and DYR files are taken as inputs and the Modelica file is written using a template approach that is better expemplified <a href="./guide">here</a>. The Modelica representation will be mainly composed by three structures: the grid model, generator's package and a record package.
+The translator parses the information from the RAW and DYR files that are taken as inputs. Then, the information is mapped into the Modelica representation, using python functions that write OpenIPSL's models instantiations based on identification of components in the PSSE files. For example, if the RAW file shows a line connecting two buses, the transator should instantiate the two buses, the line model, and then perform the connection between these elements.
+
+Python functions are also the responsible for scanning the DYR file, identifying what models are used, if they have corresponding OpenIPSL representations and how each dynamic model is connected within each generation unit. These machines are written using a template approach that is better expemplified <a href="./guide">here</a>. The output Modelica representation also follows a template that is described below.
+
+## Modelica Representation
+
+The Modelica representation will be mainly composed by three structures: the grid model, generator's package and a record package.
 
 The power grid model, as it suggests, is a representation of the grid itself and it contains the instantiation of the passive components of the grid, such as buses, branches, banks and loads, the way these elements are connected and, finally, the instantiation of the collection of generating units (generators). Basically all the information used to create the power grid model file comes from the RAW file.
 
