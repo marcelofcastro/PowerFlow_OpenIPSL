@@ -1773,7 +1773,7 @@ def writeLog(wdir,system_base,system_frequency,psse_version,sysdata,dyrdata,time
 		logfile.write("   Fault starts at: %.4f\n" % float(faultinfo[3]))
 		logfile.write("   Fault is cleared at: %.4f\n" % float(faultinfo[4]))
 		logfile.write("   Fault resistance R (pu, system base): %.6f\n" % float(faultinfo[1]))
-		logfile.write("   Fault resistance X (pu, system base): %.6f\n" % float(faultinfo[2]))
+		logfile.write("   Fault resistance X (pu, system base): %.6f\n\n\n" % float(faultinfo[2]))
 	else:
 		logfile.write("No event was added...\n")
 	# ----- Writing information about CPU consumption:
