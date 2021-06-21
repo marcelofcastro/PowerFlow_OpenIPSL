@@ -4,7 +4,7 @@ title: Model Transformation Tool Description
 
 ## Introduction
 
-The Model Transformation Tool prototype work as a way of translating PSSE files into Modelica models using the Open Instance Power Systems Library, or <a href="https://github.com/OpenIPSL/OpenIPSL">OpenIPSL</a> . Models in PSSE are, mainly, described by two files: RAW file and DYR file, while in Modelica one file could be used to represent everything. However, the Model Transformation Tool uses a modular structure, taking advantage of the object-oriented feature of Modelica and making it possible for the user to edit the target model after the translation is done. 
+The Model Transformation Tool prototype work as a way of translating PSSE files into Modelica models using the Open Instance Power Systems Library, or <a href="https://github.com/OpenIPSL/OpenIPSL">OpenIPSL</a>. Models in PSSE are, mainly, described by two files: RAW file and DYR file, while in Modelica one file could be used to represent everything. However, the Model Transformation Tool uses a modular structure, taking advantage of the object-oriented feature of Modelica and making it possible for the user to edit the target model after the translation is done. 
 
 ## PSSE Representation
 
