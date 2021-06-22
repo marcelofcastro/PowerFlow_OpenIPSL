@@ -105,6 +105,6 @@ The translated model can be loaded into Modelica and exported as an FMU. The FMU
 
 ![Real Time Simulation - Voltage](images/real_time_1.png)
 
-![Real Time Simulation - PELEC](images/real_time_1.png)
+![Real Time Simulation - PELEC](images/real_time_2.png)
 
 <a href="./index">Go back</a> 
