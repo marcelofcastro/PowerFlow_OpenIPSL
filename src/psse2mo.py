@@ -582,7 +582,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   omega(fixed = true))\n")
 	elif model == 'GENSAL':		
 		if xppd != float(genlist.iloc[row,10]):
-			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
+			print('Warning: Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENSAL machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
@@ -606,7 +606,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   angle_0 = angle_0)\n")
 	elif model == 'GENSAE':
 		if xppd != float(genlist.iloc[row,10]):
-			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
+			print('Warning: Please verify Xppd in RAW and DYR for GENSAE %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENSAE machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
@@ -630,7 +630,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   angle_0 = angle_0)\n")
 	elif model == 'GENROU':
 		if xppd != float(genlist.iloc[row,12]):
-			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
+			print('Warning: Please verify Xppd in RAW and DYR for GENROU %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENROU machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))
@@ -656,7 +656,7 @@ def writeMac(genpdata,index,dyrdata,result,file):
 		file.write("   angle_0 = angle_0)\n")
 	elif model == 'GENROE':
 		if xppd != float(genlist.iloc[row,12]):
-			print('Please verify Xppd in RAW and DYR for GENSAL %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
+			print('Warning: Please verify Xppd in RAW and DYR for GENROE %d in bus %d' % (int(genpdata.iloc[index,8]),int(genpdata.iloc[index,0])))
 		file.write("  OpenIPSL.Electrical.Machines.PSSE.GENROE machine(\n")
 		file.write("   Tpd0 = %.4f,\n" % float(genlist.iloc[row,2]))
 		file.write("   Tppd0 = %.4f,\n" % float(genlist.iloc[row,3]))

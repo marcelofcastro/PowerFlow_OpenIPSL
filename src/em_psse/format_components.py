@@ -137,11 +137,11 @@ def format_transformer(df,s_system=100):
 				# Load loss in watts, impedence in unit base
 				x = x/s_unit
 			if x == 0:
-				logger.error('Impedence X is 0')
+				logger.error('Warning: Impedance X is 0')
 			elif x < 0:
-				logger.error('Impedence X is < 0')
+				logger.error('Warning: Impedance X is < 0')
 			elif x > 10:
-				logger.error('Impedence is pretty high, X > 10')
+				logger.error('Warning: Impedance is pretty high, X > 10')
 			return x
 		return get_x
 

@@ -17,7 +17,7 @@ A more detailed guide can be found <a href="https://github.com/ALSETLab/NYPAMode
 python3 main.py
 ```
 
-The python command may vary depending on version and on operative system, but when the appropriate command is used, the user should see the following widget window.
+Note: the python command may vary depending on version and on operative system, but when the appropriate command is used, the user should see the following widget window.
 
 ![Tool's Main Window](images/tool.png)
 
